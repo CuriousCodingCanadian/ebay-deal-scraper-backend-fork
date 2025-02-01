@@ -7,7 +7,7 @@ load_dotenv()  # Load environment variables from .env file
 
 app = Flask(__name__)
 
-EBAY_APP_ID = os.environ.get("EBAY_APP_ID")
+EBAY_APP_ID = os.environ.get("EBAY_APP_ID")  # Get API key from environment variables
 
 @app.route('/api/search')
 def search():
@@ -23,14 +23,14 @@ def search():
         }
         params = {
             "q": query,
-            "limit": 15,
+            "limit": 15,  # Adjust as needed
             "fieldgroups": "FULL"
         }
 
         response = requests.get("https://api.ebay.com/buy/browse/v1/item_summary/search", 
                                 headers=headers, params=params)
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-        listings = response.json().get('itemSummaries', [])
+        listings = response.json().get('itemSummaries', [])  # Extract listings or empty list
 
         return jsonify(listings)
 
@@ -41,12 +41,7 @@ def search():
         print(f"An unexpected error occurred: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
-# Add CORS headers to the response
-@app.after_request
-def add_cors_headers(response):
-    response.headers['Access-Control-Allow-Origin'] = '*' 
-    return response
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=True, host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", 5000))  # Get port from environment or use 5000
+    app.run(debug=True, host='0.0.0.0', port=port) # host='0.0.0.0' for Vercel
