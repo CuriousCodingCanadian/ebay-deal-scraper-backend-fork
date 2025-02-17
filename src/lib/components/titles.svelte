@@ -1,5 +1,5 @@
 <style lang="scss">
-    @import "/../static/vars.scss";
+    $headingFont: 'Manrope', 'Segoe UI', 'Arial', sans-serif;
     h1 {
         font-family: $headingFont;
         text-align: center;

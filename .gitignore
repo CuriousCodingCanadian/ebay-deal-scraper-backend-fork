@@ -1,4 +1,8 @@
+# node.js
 node_modules
+node_modules/
+package-lock.json
+
 
 # Output
 .output
@@ -11,8 +15,11 @@ node_modules
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+Icon?
+ehthumbs.db
 
-# Env
+# env
 .env
 .env.*
 !.env.example
@@ -21,3 +28,11 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# git
+.git
+
+# temp files and logs
+*.temp
+*.tmp 
+*.log
