@@ -210,8 +210,8 @@ export const load: PageServerLoad = async ({ url }) => {
         // Error debugging
         console.error('💥 DEBUG: Full error details:', {
             error: err,
-            message: err.message,
-            stack: err.stack,
+            message: err instanceof Error ? err.message : 'Unknown error',
+            stack: err instanceof Error ? err.stack : 'No stack trace',
             params: url.searchParams.toString()
         });
         throw error(500, 'Internal Server Error: Failed to fetch results from eBay');
