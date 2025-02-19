@@ -1,16 +1,3 @@
-// export type SearchResult = {
-//     title: string;
-//     price: string;
-//     shipping: string;
-//     type: string;
-//     timeRemaining?: string;
-//     link: string;
-// }
-
-// export interface PageData {
-//     results: SearchResult[];
-// }
-
 export interface SearchResult {
     title: string;
     price: string;
@@ -18,6 +5,7 @@ export interface SearchResult {
     type: string;
     timeRemaining?: string;
     link: string;
+    thumbnail: string;
 }
 
 export interface ApiResponse {
@@ -32,5 +20,6 @@ export type PageData = {
         type: string;
         timeRemaining?: string;
         link: string;
+        thumbnail: string;
     }>;
 };
