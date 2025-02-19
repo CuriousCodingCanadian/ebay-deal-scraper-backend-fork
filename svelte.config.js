@@ -22,13 +22,23 @@
 import adapter from '@sveltejs/adapter-auto';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import dotenv from 'dotenv';
-import path from 'path';
 
 dotenv.config();
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   preprocess: vitePreprocess(),
+  // Modified version of one of the solutions at:
+  // https://stackoverflow.com/questions/60677782/how-to-disable-svelte-warning-unused-css-selector
+  
+  // this actually doesn't work so I commented it out
+  // onwarn: (warning, handler) => {
+  //   if (warning.code === 'css_unused_selector') {
+  //     return;
+  //   }
+  //   handler(warning);
+  // },
+  
   kit: {
     adapter: adapter(),
     env: {

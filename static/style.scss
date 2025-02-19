@@ -6,16 +6,19 @@ $bodyLeftRightMargin: 20px;
 $bodyTopMargin: -10px;
 $veryLightGrey: #dbdbdb;
 
+
 /* Manrope Font */
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+// @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+// I moved this to the <app.html> file because i think @import is being deprecated
+// and i dont wanna figure out an alternative
 
 /* SF Pro Font */
 @font-face {
-font-family: "SF Pro";
-src:
-    local("SF Pro"),
-    url("../appleFonts/SF-Pro.woff2") format("woff2"),
-    url("../appleFonts/SF-Pro.ttf") format("truetype"),
+    font-family: "SF Pro";
+    src:
+        local("SF Pro"),
+        url("/appleFonts/SF-Pro.woff2") format("woff2"),
+        url("/appleFonts/SF-Pro.ttf") format("truetype"),
 }
 
 #sveltekit-body {
@@ -34,6 +37,17 @@ option {
     font-family: $bodyFont;
 }
 
+// input[type="text"] {
+//     padding: 10px;
+//     border: 1px solid $veryLightGrey;
+//     border-radius: 5px;
+//     width: 666px;
+//     box-sizing: border-box;
+//     font-family: $bodyFont;
+//     background-color: black;
+//     color: $fontColor;
+// }
+
 input[type="text"] {
     padding: 10px;
     border: 1px solid $veryLightGrey;
@@ -43,6 +57,11 @@ input[type="text"] {
     font-family: $bodyFont;
     background-color: black;
     color: $fontColor;
+
+    &:focus {
+        outline: none;
+        border-color: lighten($veryLightGrey, 10%);
+    }
 }
 
 button {
@@ -51,18 +70,18 @@ button {
     border: 0;
     color: $fontColor;
     border-radius: 0.5em;
-    font-size: 1.35rem;
+    font-size: 1.35rem; // im such a css noob idek what rem or em is, but if it works it works
     padding: 0.375em 1em;
     font-weight: 600;
     transition: 0.2s ease;
     box-shadow: 0 0 0.6em rgba(235, 235, 235, 1);
     cursor: pointer;
-}
 
-button:hover {
-    translate: 0 0.125em;
-    box-shadow: 0 0 0.3em rgba(141, 141, 141, 1);
-    color: $veryLightGrey;
+    &:hover {
+        translate: 0 0.125em;
+        box-shadow: 0 0 0.3em rgba(141, 141, 141, 1);
+        color: $veryLightGrey;
+    }
 }
 
 #input-container {
