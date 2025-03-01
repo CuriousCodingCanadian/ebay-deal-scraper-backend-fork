@@ -1,6 +1,6 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
-    import { onMount, onDestroy } from 'svelte';
+    import { onMount } from 'svelte';
 
     let searchQuery = '';
     let filterAuction = true;
@@ -76,32 +76,6 @@
                 }
             });
         } else { console.error(`[Client] Debug: DOM Elements for accordion "Search Filters" not found`) }
-        
-        // Accordion for Condition Checkboxes
-        let isConditionAccordionOpen = false;
-        const conditionAccordionTitle = document.querySelector("#section-title-conditions");
-        const conditionAccordionContent = document.querySelector("#section-content-conditions") as HTMLElement;
-        const conditionAccordionIcon = document.querySelector("#conditions-accordion-chevron") as HTMLElement;
-
-        if (conditionAccordionTitle && conditionAccordionContent && conditionAccordionIcon) {
-            console.log(`[Client] Debug: DOM Elements for accordion "Conditions" Found!`)
-            conditionAccordionTitle.addEventListener("click", () => {
-                console.log(`[Client] Debug: EventListener: Accordion "Conditions" Clicked`)
-                isConditionAccordionOpen = !isConditionAccordionOpen;
-                
-                if (isConditionAccordionOpen) {
-                    conditionAccordionContent.style.maxHeight = `${conditionAccordionContent.scrollHeight}px`;
-                    conditionAccordionIcon.style.transform = "rotate(90deg)";
-                    conditionAccordionContent.classList.add("active");
-                    console.log(`[Client] Debug: Accordion "Conditions" Opened`)
-                } else {
-                    conditionAccordionContent.style.maxHeight = "0";
-                    conditionAccordionIcon.style.transform = "rotate(0deg)";
-                    conditionAccordionContent.classList.remove("active");
-                    console.log(`[Client] Debug: Accordion "Conditions" Closed`)
-                }
-            });
-        } else { console.error(`[Client] Debug: DOM Elements for accordion "Conditions" not found`) }
 
 
         // condition checkbox ai generated thingy :)
@@ -134,8 +108,76 @@
         box.addEventListener('change', updateCondition);
         });
 
-        boxes.forEach(box => box.checked = true);
-    });
+        boxes.forEach(box => box.checked = true);        
+
+
+        // checkbox shit
+        // const newCondition = document.getElementById('new-condition') as HTMLInputElement;
+        // const refurbishedCondition = document.getElementById('refurbished-condition') as HTMLInputElement;
+        // const usedCondition = document.getElementById('used-condition') as HTMLInputElement;
+
+        // if (newCondition) {
+        // newCondition.addEventListener('change', () => {
+        //     document.querySelectorAll<HTMLInputElement>('.other-new-condition').forEach(checkbox => {
+        //     checkbox.checked = newCondition.checked;
+        //     });
+        // });
+        // }
+
+        // if (refurbishedCondition) {
+        // refurbishedCondition.addEventListener('change', () => {
+        //     document.querySelectorAll<HTMLInputElement>('.other-refurbished-condition').forEach(checkbox => {
+        //     checkbox.checked = refurbishedCondition.checked;
+        //     });
+        // });
+        // }
+
+        // if (usedCondition) {
+        // usedCondition.addEventListener('change', () => {
+        //     document.querySelectorAll<HTMLInputElement>('.other-used-condition').forEach(checkbox => {
+        //     checkbox.checked = usedCondition.checked;
+        //     });
+        // });
+        // }
+
+        // checkbox shit 2.0
+        function updateMainCheckboxState(mainCheckbox: HTMLInputElement, subCheckboxes: NodeListOf<HTMLInputElement>) {
+        const checkedCount = Array.from(subCheckboxes).filter(checkbox => checkbox.checked).length;
+
+        if (checkedCount === subCheckboxes.length) {
+            mainCheckbox.checked = true;
+            mainCheckbox.indeterminate = false;
+        } else if (checkedCount === 0) {
+            mainCheckbox.checked = false;
+            mainCheckbox.indeterminate = false;
+        } else {
+            mainCheckbox.checked = false;
+            mainCheckbox.indeterminate = true;
+        }
+        }
+
+        function setupCheckboxSync(mainId: string, subClass: string) {
+        const mainCheckbox = document.getElementById(mainId) as HTMLInputElement;
+        const subCheckboxes = document.querySelectorAll<HTMLInputElement>(subClass);
+
+        if (!mainCheckbox) return;
+
+        mainCheckbox.addEventListener('change', () => {
+            subCheckboxes.forEach(checkbox => {
+            checkbox.checked = mainCheckbox.checked;
+            });
+        });
+
+        subCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => updateMainCheckboxState(mainCheckbox, subCheckboxes));
+        });
+        }
+
+        setupCheckboxSync('new-condition', '.other-new-condition');
+        setupCheckboxSync('refurbished-condition', '.other-refurbished-condition');
+        setupCheckboxSync('used-condition', '.other-used-condition');
+
+    }); // onMount closing brace
 </script>
 
 <style lang="scss">
@@ -151,142 +193,134 @@
         on:input={() => console.log('📝 [Client] Debug: Search query updated:', searchQuery)} 
         on:keydown={handleSubmitEnter}
         placeholder="Enter search query..." />
-    <div class="accordion">
+    <div class="accordio">
         <div class="section">
             <div class="section-title-filters" id="section-title-filters"><i id="filters-accordion-chevron" class="fa-solid fa-chevron-right" aria-hidden="true"></i>&nbsp;&nbsp;Search Filters</div>
             <div class="section-content-filters" id="section-content-filters"> 
                 <div class="text">
-                    <!-- <div class="input-container"> -->
-                        <label for="type"></label>
-                        <div>
-                            <label>
-                                <input type="checkbox" bind:checked={filterAuction}>
-                                Auction
-                            </label>
-                            <br>
-                            <label>
-                                <input type="checkbox" bind:checked={filterBuyItNow}>
-                                Buy It Now
-                            </label>
-                        </div>
-                
-                        <!-- {#if filterAuction && !filterBuyItNow}
-                            <p class="warning" style="text-align: center !important;"><span class="warning-red">Warning:</span> The auction filter might not work as expected. The issue is being investigated.</p>
-                        {/if} -->
-                        
-                        <label class="block" for="sort" style="margin-top: 15px !important;">Sort By:</label>
-                        <select class="block" id="sort" bind:value={sortBy} on:change={() => console.log('📊 [Client] Debug: Sort changed to:', sortBy)}>
-                            <option value="best-match">Best Match</option>
-                            <option value="price">Price + Shipping (lowest to highest)</option>
-                            <option value="-price">Price + Shipping (highest to lowest)</option>
-                            <option value="newly-listed">List Time (new to old)</option>
-                            {#if filterAuction && !filterBuyItNow}
-                                <option value="end-time">Auction End Time</option>
-                            {/if}
-                        </select>
-                
-                        <label class="block" for="minPrice" style="margin-top: 15px !important;">Min Price:</label>
-                        <input class="block" type="number" id="minPrice" bind:value={minPrice} placeholder="Enter min price">
-                
-                        <label class="block" for="maxPrice" style="margin-top: 15px !important;">Max Price:</label>
-                        <input class="block" type="number" id="maxPrice" bind:value={maxPrice} placeholder="Enter max price">
-                
-                        <div class="accordion">
-                            <div class="section">
-                                <div class="section-title-conditions" id="section-title-conditions"><i id="conditions-accordion-chevron" class="fa-solid fa-chevron-right" aria-hidden="true"></i>&nbsp;&nbsp;Conditions</div>
-                                    <div class="section-content-conditions" id="section-content-conditions"> 
-                                        <div class="text">
+                    <label for="type"></label>
+                    <div>
                         <label>
-                            <input type="checkbox" class="condition-box" data-id="1000">
+                            <input type="checkbox" bind:checked={filterAuction}>
+                            Auction
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" bind:checked={filterBuyItNow}>
+                            Buy It Now
+                        </label>
+                    </div>
+            
+                    <!-- {#if filterAuction && !filterBuyItNow}
+                        <p class="warning" style="text-align: center !important;"><span class="warning-red">Warning:</span> The auction filter might not work as expected. The issue is being investigated.</p>
+                    {/if} -->
+                    
+                    <label class="block" for="sort" style="margin-top: 15px !important;">Sort By:</label>
+                    <select class="block" id="sort" bind:value={sortBy} on:change={() => console.log('📊 [Client] Debug: Sort changed to:', sortBy)}>
+                        <option value="best-match">Best Match</option>
+                        <option value="price">Price + Shipping (lowest to highest)</option>
+                        <option value="-price">Price + Shipping (highest to lowest)</option>
+                        <option value="newly-listed">List Time (new to old)</option>
+                        {#if filterAuction && !filterBuyItNow}
+                            <option value="end-time">Auction End Time</option>
+                        {/if}
+                    </select>
+            
+                    <label class="block" for="minPrice" style="margin-top: 15px !important;">Min Price:</label>
+                    <input class="block" type="number" id="minPrice" bind:value={minPrice} placeholder="Enter min price">
+            
+                    <label class="block" for="maxPrice" style="margin-top: 15px !important;">Max Price:</label>
+                    <input class="block" type="number" id="maxPrice" bind:value={maxPrice} placeholder="Enter max price">
+                    
+                    <br><br>
+                    <label for="condition-boxes">Item Conditions:</label>
+                    <div id="condition-boxes">
+                        <label>
+                            <input type="checkbox" id="new-condition" class="condition-box" data-id="1000">
                             New
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="1500">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-new-condition" data-id="1500">
                             Open Box
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="1750">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-new-condition" data-id="1750">
                             New (with defects)
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2000">
+                        </label>
+                        <br>     
+                        <label>
+                            <input type="checkbox" id="refurbished-condition" class="condition-box" data-id="">
+                            Refurbished
+                        </label>
+                        <br>                
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2000">
                             Certified Refurbished
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2010">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2010">
                             Excellent - Refurbished
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2020">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2020">
                             Very Good - Refurbished
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2030">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2030">
                             Good - Refurbished
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2500">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2500">
                             Refurbished by Seller
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2750">
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" id="used-condition" class="condition-box" data-id="">
+                            Used
+                        </label>
+                        <br>
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="2750">
                             Used - Like New
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="2990|3000">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="2990|3000">
                             Used - Excellent
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="3010|4000">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="3010|4000">
                             Used - Very Good
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="5000">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="5000">
                             Used - Good
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="6000">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="6000">
                             Used - Fair
-                          </label>
-                          <br>
-                          
-                          <label>
-                            <input type="checkbox" class="condition-box" data-id="7000">
+                        </label>
+                        <br>                    
+                        <label>
+                            <input type="checkbox" id="notworking-condition" class="condition-box" data-id="7000">
                             For parts or not working
-                          </label>
-                          <br>
-                          </div></div></div></div>
-                    <!-- </div> -->
+                        </label>
+                        <br>                
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <button type="submit" style="margin-top: 35px !important;" on:click={handleSubmit}>Search</button>
+    <button type="submit" style="margin-top: 35px !important;" class="searchbutton" on:click={handleSubmit}>Search</button>
     {#if noSearchQuery}
         <br>    
         <p class="warning" style="text-align: center !important;"><span class="warning-red">Error:</span> No search query entered.</p>

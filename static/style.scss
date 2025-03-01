@@ -93,7 +93,7 @@ option {
 //     }
 // }
 
-button:not(:where(.pagination button)) {
+.searchbutton {
     outline: none;
     font-family: $bodyFont;
     background-color: $primary;
@@ -293,7 +293,7 @@ button:not(:where(.pagination button)) {
     }
 }
 
-.accordion {
+.accordio {
     display: flex;
     flex-direction: column;
     color: $text;
@@ -310,20 +310,6 @@ button:not(:where(.pagination button)) {
 
         .section-title-filters {
             width: 635px;
-            align-self: flex-start;
-            padding: 1em;
-            cursor: pointer;
-            user-select: none;
-            margin-top: 0.6rem;
-            border-bottom: black solid 2px;
-            border-top: black solid 2px;
-
-            i {
-                transition: transform 0.3s ease-in-out;
-            }
-        }
-
-        .section-title-conditions {
             align-self: flex-start;
             padding: 1em;
             cursor: pointer;
@@ -369,24 +355,6 @@ button:not(:where(.pagination button)) {
             }
         }
 
-        .section-content-conditions {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-            background-color: $background;
-
-            &.active {
-                max-height: 2000px;
-            }
-
-            .text {
-                // padding shorthand - top, right, bottom, left
-                // or top | left and right | bottom if 3 are specified
-                padding: 0rem 1rem 1rem;
-                width: 100%;
-            }
-        }
-
         // .section-content {
         //     max-height: 0;
         //     overflow: hidden;
@@ -410,4 +378,14 @@ button:not(:where(.pagination button)) {
 // "class styles"
 .block {
     display: block;
+}
+
+// condition checkboxes
+.condition-box {
+    color: $text;
+    font-family: $bodyFont;
+}
+
+.indented-condition-box {
+    margin-left: 1.8rem;
 }
