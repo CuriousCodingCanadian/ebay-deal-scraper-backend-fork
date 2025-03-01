@@ -1,18 +1,9 @@
 import { error } from '@sveltejs/kit';
 import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
+import type { EbayItem, TokenInfo } from '$lib/types';
 
-// Token management
-interface TokenInfo {
-    token: string;
-    expiresAt: number;
-}
-
-let tokenCache: TokenInfo | null = null;
-let authRetries = 0;
-const MAX_AUTH_RETRIES = 3;
-const TOKEN_REFRESH_INTERVAL = 6969; // seconds
-
+// function for debug messages
 function getTimestamp(): string {
     const date = new Date();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -28,12 +19,21 @@ function getTimestamp(): string {
 }
 
 function logDebug(message: string, data?: any) {
-    const timestamp = getTimestamp();
+    let timestamp = getTimestamp();
     console.log(`${timestamp} [Server] Debug: ${message}`, data || '');
 }
 
-async function getValidToken(): Promise<string | null> {
-    const now = Math.floor(Date.now() / 1000);
+// initialize variables
+let tokenCache: TokenInfo | null = null;
+let authRetries = 0;
+let page = 1;
+
+// OAuth api authentication variables
+const MAX_AUTH_RETRIES = 3; // if OAuth key fails to authenticate, it will generate a new key 3 times before aborting 
+const TOKEN_REFRESH_INTERVAL = 6969; // seconds before a new OAuth token is generated
+
+async function getValidToken(): Promise<string | null> { // function to generate valid tokens. Valid token is always stored in var {data.access_token} and you use {tokenCache.token}
+    const now = Math.trunc(Date.now() / 1000); // if this doesn't work for some reason try Math.floor
 
     if (tokenCache && now < tokenCache.expiresAt) {
         logDebug('🔑 Using cached token', { 
@@ -45,7 +45,7 @@ async function getValidToken(): Promise<string | null> {
 
     try {
         if (!env.EBAY_APP_ID || !env.EBAY_CERT_ID) {
-            logDebug('❌ Missing eBay credentials');
+            logDebug('❌ Missing eBay credentials! Check .env file for: EBAY_APP_ID, EBAY_CERT_ID');
             return null;
         }
 
@@ -60,7 +60,7 @@ async function getValidToken(): Promise<string | null> {
         });
 
         if (!response.ok) {
-            logDebug('❌ Token request failed', {
+            logDebug('Token request failed', {
                 status: response.status,
                 statusText: response.statusText
             });
@@ -73,113 +73,133 @@ async function getValidToken(): Promise<string | null> {
             expiresAt: now + TOKEN_REFRESH_INTERVAL
         };
 
-        logDebug('🔑 New token generated', {
+        logDebug('New token generated', {
             expiresIn: TOKEN_REFRESH_INTERVAL,
             preview: `${data.access_token.substring(0, 5)}...`
         });
 
         return data.access_token;
     } catch (err) {
-        logDebug('❌ Token generation error', err);
+        logDebug('Token generation error! ', err);
         return null;
     }
 }
 
-interface EbayItem {
-    title: string;
-    price: { value: string };
-    shippingOptions: Array<{ shippingCost: { value: string } }>;
-    buyingOptions: string[];
-    itemEndDate: string;
-    itemWebUrl: string;
-    image: { imageUrl: string }; // Add this line
-}
-
 export const load: PageServerLoad = async ({ url }) => {
+    // set variables for the API call
+    // example url http://localhost:5173/results?search=QUERY&filter=buy-it-now&sort=-price&page=1&minPrice={price}&maxPrice={price}
+    const searchQuery = url.searchParams.get('search'); // example value: "QUERY" without quotes
+    const filter = url.searchParams.get('filter');
+    const sort = url.searchParams.get('sort');
+    const page = url.searchParams.get('page');
+    const pageNumber = page ? parseInt(page, 10) : 1; // convert string to number
+    const minPrice = url.searchParams.get('minPrice');
+    const maxPrice = url.searchParams.get('maxPrice');
+
+    const limit = 20;
+    const offset = (pageNumber - 1) * limit;
+
+
     logDebug('🔍 Search initiated with URL params:', url.searchParams.toString());
 
-    const searchQuery = url.searchParams.get('search');
-    const filterType = url.searchParams.get('filter') || 'all';
-    const sortBy = url.searchParams.get('sort') || 'best-match';
-    const page = parseInt(url.searchParams.get('page') || '1', 10); // Get page number from query params
-    const minPrice = url.searchParams.get('minPrice') || '';
-    const maxPrice = url.searchParams.get('maxPrice') || '';
-    const entriesPerPage = 20; // Number of results per page
+    const endpoint = 'https://api.ebay.com/buy/browse/v1/item_summary/search?';
 
-    const offset = (page - 1) * entriesPerPage; // Calculate offset
+    // modified variables
+    const apiSearchQuery = `q=${searchQuery ? searchQuery.replace(/ /g, '%20') : ''}`
 
-    logDebug('🎯 Parsed parameters:', {
-        searchQuery,
-        filterType,
-        sortBy,
-        page,
-        minPrice,
-        maxPrice,
-        rawUrl: url.toString()
-    });
-
-    if (!searchQuery) {
-        logDebug('⚠️ No search query provided, returning empty results');
-        return { results: [] };
+    let apiFilter = ''; // empty string initializes
+    switch (filter) {
+        case "auction":
+            apiFilter = "{AUCTION}";
+            break;
+        case "buy-it-now":
+            apiFilter = "{FIXED_PRICE}";
+            break;
+        case "all":
+            apiFilter = "{FIXED_PRICE|AUCTION}";
+            break;
+        default:
+            // Fallback
+            console.warn(`Unexpected filter value: ${filter}`);
+            apiFilter = "{FIXED_PRICE|AUCTION}"; // Default to all
     }
 
-    function getEbaySortOrder(sortBy: string): string {
-        switch (sortBy) {
-            case 'price':
-                return 'price';
-            case 'end-time':
-                return 'endTime';
-            case 'best-match':
-                return 'bestMatch';
-            default:
-                return 'bestMatch';
-        }
+    let apiSort = ''; // empty string initializes
+    switch (sort) {
+        case "price":
+            apiSort = "&sort=price";
+            break;
+        case "-price":
+            apiSort = "&sort=-price";
+            break;
+        case "best-match":
+            apiSort = ""; // default is best match
+            break;
+        case "end-time":
+            apiSort = "&sort=endingSoonest";
+            break;
+        case "newly-listed":
+            apiSort = "&sort=newlyListed"
+            break;
+        default:
+            // Fallback
+            console.warn(`Unexpected sort value: ${sort}`);
+            apiSort = ""; // Default to best match
     }
 
+    let apiLimitOffset = `&limit=${limit}&offset=${offset}` // page
+
+    let apiMinMaxPrice = ''
+    if (minPrice && !maxPrice) { // only MIN PRICE is specified
+        apiMinMaxPrice = `,price:[${minPrice}],priceCurrency:USD`
+    } else if (!minPrice && maxPrice) { // only MAX PRICE is specified
+        apiMinMaxPrice = `,price:[..${maxPrice}],priceCurrency:USD`
+    } else if (minPrice && maxPrice) { // BOTH are specified
+        apiMinMaxPrice = `,price:[${minPrice}..${maxPrice}],priceCurrency:USD`
+    } else { // NEITHER is specified
+        apiMinMaxPrice = ''
+    }
+
+    let apiFilters = `&filter=buyingOptions:${apiFilter}${apiMinMaxPrice}`
+
+    const finalURL = `${endpoint}${apiSearchQuery}${apiFilters}${apiSort}${apiLimitOffset}`
+    logDebug(`Final URL for API call: ${finalURL}`)
+
+    // starting here, the backend code is AI generated with some modifications made by me
+    // I will refactor once I know TypeScript better
+    // the whole thing used to be AI but I rewrote part of it
+    
     try {
-        const endpoint = 'https://api.ebay.com/buy/browse/v1/item_summary/search';
-        const params = new URLSearchParams({
-            q: searchQuery,
-            filter: filterType === 'all' ? '' : `buyingOptions:{${filterType.toUpperCase()}}`,
-            sort: getEbaySortOrder(sortBy),
-            limit: entriesPerPage.toString(), // Add limit parameter
-            offset: offset.toString(), // Add offset parameter
-            ...(minPrice && { priceMin: minPrice }),
-            ...(maxPrice && { priceMax: maxPrice })
-        });
-
-        const requestUrl = `${endpoint}?${params}`;
-        logDebug('🌐 Full API request URL:', requestUrl);
-
         while (authRetries < MAX_AUTH_RETRIES) {
             const token = await getValidToken();
 
             if (!token) {
                 authRetries++;
-                logDebug(`🔄 Auth retry ${authRetries}/${MAX_AUTH_RETRIES}`);
+                let retriesLeft = MAX_AUTH_RETRIES - authRetries;
+                if (retriesLeft === 1) {
+                    logDebug(`🔄 OAuth authentication fail. Retrying... (1 try left)`);
+                } else {
+                    logDebug(`🔄 OAuth authentication fail. Retrying... (${retriesLeft} tries left)`);
+                }
                 if (authRetries === MAX_AUTH_RETRIES) {
                     throw error(401, 'Failed to authenticate with eBay after maximum retries');
                 }
                 continue;
             }
 
-            const response = await fetch(requestUrl, {
+            const response = await fetch(finalURL, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Accept-Language': 'en-US',
+                    'Accept-Charset': 'utf-8',
                 }
             });
 
-            logDebug('📡 API Response:', {
-                status: response.status,
-                statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries())
-            });
-
             if (response.status === 401 || response.status === 403) {
-                tokenCache = null; // Clear invalid token
+                tokenCache = null; // Clear token cache (cached token is most likely invalid)
                 authRetries++;
                 continue;
             }
@@ -197,16 +217,8 @@ export const load: PageServerLoad = async ({ url }) => {
             const data = await response.json();
             authRetries = 0; // Reset counter on success
 
-            logDebug('📦 API Response structure:', {
-                hasData: !!data,
-                keys: Object.keys(data),
-                total: data.total,
-                itemCount: data.itemSummaries?.length || 0,
-                firstItem: data.itemSummaries?.[0] ? Object.keys(data.itemSummaries[0]) : 'no items'
-            });
-
             if (!data.itemSummaries) {
-                logDebug('⚠️ No items found in response data structure');
+                logDebug('No items found in response data structure');
                 return { results: [] };
             }
 
@@ -214,14 +226,78 @@ export const load: PageServerLoad = async ({ url }) => {
                 const shippingCost = item.shippingOptions?.[0]?.shippingCost?.value;
                 const shippingText = shippingCost === '0.00' || shippingCost === undefined ? 'Free Shipping' : `+$${shippingCost} Shipping`;
 
+                // Extract seller information
+                const sellerName = item.seller?.username || 'N/A';
+                const feedbackScore = item.seller?.feedbackScore || 0;
+                const feedbackPercentage = item.seller?.feedbackPercentage || '0'; // feedbackPercentage is a string
+                const sellerInfo = `${sellerName} (${feedbackScore}) (${feedbackPercentage}%)`;
+
+                // calculate time until listing end
+                // item.itemEndDate - ISO 8601 Date from eBay API, for example '2025-02-23T17:23:29.000Z'
+                const now = Math.trunc(Date.now() / 1000)
+                const future = Math.trunc(Number(new Date(item.itemEndDate).getTime() / 1000))
+                const unformattedTimeRemaining = Math.trunc(future - now)
+                
+                // function formatTimeDifference(difference: number): string {
+                //     const days = Math.floor(difference / 86400);
+                //     const hours = Math.floor((difference % 86400) / 3600);
+                //     const minutes = Math.floor((difference % 3600) / 60);
+                
+                //     const parts = [];
+                //     if (days > 0) parts.push(`${days}d`);
+                //     if (hours > 0) parts.push(`${hours}h`);
+                //     if (minutes > 0) parts.push(`${minutes}m`);
+                
+                //     return parts.join(" ") || "0m"; // Default to "0m" if all values are 0
+                // }
+                
+                function formatTimeDifference(difference: number): string {
+                    const days = Math.floor(difference / 86400);
+                    const hours = Math.floor((difference % 86400) / 3600);
+                    const minutes = Math.floor((difference % 3600) / 60);
+                    const seconds = difference % 60;
+                
+                    // Create a list of nonzero time units
+                    const parts = [];
+                    if (days > 0) parts.push(`${days}d`);
+                    if (hours > 0) parts.push(`${hours}h`);
+                    if (minutes > 0) parts.push(`${minutes}m`);
+                    if (seconds > 0) parts.push(`${seconds}s`);
+                
+                    // Determine which two to display
+                    if (parts.length > 2) {
+                        return parts.slice(0, 2).join(" ");
+                    }
+                
+                    return parts.join(" ") || "0s"; // Default to "0s" if all values are 0
+                }
+
+                const timeRemaining: string = formatTimeDifference(unformattedTimeRemaining);
+                
+                // get item number from url
+                let itemnumber = ''
+                const match = item.itemWebUrl.match(/\/itm\/(\d+)\?/);
+                if (match) {
+                    itemnumber = match[1];
+                } else {
+                    logDebug("Item number not found in URL.");
+                }
+
+
                 const processed = {
                     title: item.title,
                     price: item.price?.value || 'N/A',
+                    bidprice: item.currentBidPrice?.value || 'N/A',
+                    bidcount: item.bidCount || 0, 
                     shipping: shippingText,
-                    type: item.buyingOptions?.[0] === 'FIXED_PRICE' ? 'Buy It Now' : item.buyingOptions?.[0] || 'Unknown',
-                    timeRemaining: item.itemEndDate,
+                    type: item.buyingOptions?.[0] || 'Unknown',
+                    timeRemaining: timeRemaining,
                     link: item.itemWebUrl,
-                    thumbnail: item.image?.imageUrl || ''
+                    itemnumber: itemnumber,
+                    thumbnail: item.image?.imageUrl || '',
+                    sellerName: item.seller?.username || 'N/A',
+                    feedbackScore: item.seller?.feedbackScore || 0,
+                    feedbackPercentage: item.seller?.feedbackPercentage || '0',
                 };
                 return processed;
             });
@@ -245,4 +321,8 @@ export const load: PageServerLoad = async ({ url }) => {
         });
         throw error(500, 'Failed to fetch results from eBay');
     }
-};
+}
+
+function getTime(itemEndDate: string) {
+    throw new Error('Function not implemented.');
+}

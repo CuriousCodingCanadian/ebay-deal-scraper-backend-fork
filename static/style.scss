@@ -1,52 +1,59 @@
 @use "sass:color";
 
-$fontColor: #ebebeb;
-$headingFont: 'Manrope', 'Segoe UI', 'Arial', sans-serif;
-$bodyFont: 'SF Pro', 'Georgia', 'Segoe UI', 'Arial', sans-serif;
-$bg: #262626;
-$bodyLeftRightMargin: 20px;
-$bodyTopMargin: -10px;
+/* Manrope Font, Bitter Font, EB Garamond Google Font imports */
+// I moved these to the <app.html> file
+
+/* SF Pro Font - not used anymore */
+// @font-face {
+//     font-family: "SF Pro";
+//     src:
+//         local("SF Pro"),
+//         url("/appleFonts/SF-Pro.woff2") format("woff2"),
+//         url("/appleFonts/SF-Pro.ttf") format("truetype"),
+// }
+
+// FONTS
+$headingFont: 'Manrope', system-ui, sans-serif;
+$bodyFont: 'Bitter', 'Georgia', system-ui, 'EB Garamond', sans-serif; 
+// $bodyFont: 'Manrope', system-ui, sans-serif;
+
+// COLORS
+// Realtime Colors Palette
+$text: #262626;
+$background: #ebebeb;
+// $primary: #1A0DAB;
+$primary: #2414d4;
+// $secondary: #bad4fc;
+$secondary: #6da3f5;
+$accent: #F8991D;
+
 $veryLightGrey: #dbdbdb;
 
 
-/* Manrope Font */
-// @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
-// I moved this to the <app.html> file because i think @import is being deprecated
-// and i dont wanna figure out an alternative
-
-/* SF Pro Font */
-@font-face {
-    font-family: "SF Pro";
-    src:
-        local("SF Pro"),
-        url("/appleFonts/SF-Pro.woff2") format("woff2"),
-        url("/appleFonts/SF-Pro.ttf") format("truetype"),
-}
-
 #sveltekit-body {
-    margin-left: $bodyLeftRightMargin !important;
-    margin-right: $bodyLeftRightMargin !important;
-    margin-top: $bodyTopMargin !important;
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: -10px;
 }
 
 label {
     display: inline-block !important;
     font-family: $bodyFont;
-    color: $fontColor;
+    color: $text;
 }
 
 option {
     font-family: $bodyFont;
 }
 
-.result-item {
+.warning {
     font-family: $bodyFont;
-    color: $fontColor
+    color: $text
 }
 
-#firefox-warning {
-    font-family: $bodyFont;
-    color: $fontColor
+.warning-red {
+    // color: #fc7474 !important;
+    color: #ff1111;
 }
 
 // input[type="text"] {
@@ -57,51 +64,63 @@ option {
 //     box-sizing: border-box;
 //     font-family: $bodyFont;
 //     background-color: black;
-//     color: $fontColor;
+//     color: $text;
 // }
 
-input[type="text"] {
-    padding: 10px;
-    border: 1px solid $veryLightGrey;
-    border-radius: 5px;
-    width: 666px;
-    box-sizing: border-box;
-    font-family: $bodyFont;
-    background-color: black;
-    color: $fontColor;
-
-    &:focus {
-        outline: none;
-        border-color: color.adjust($veryLightGrey, $lightness: 10%);
-    }
+.titles {
+    font-family: $headingFont;
+    text-align: center;
+    color: $text;
 }
 
-button {
+// button:not(:where(.pagination button)) {
+//     font-family: $bodyFont;
+//     background-color: $background;
+//     border: 0;
+//     color: $text;
+//     border-radius: 0.5em;
+//     font-size: 1.35rem;
+//     padding: 0.375em 1em;
+//     font-weight: 600;
+//     transition: 0.2s ease;
+//     box-shadow: 0 0 0.6em rgba(235, 235, 235, 1);
+//     cursor: pointer;
+
+//     &:hover {
+//         translate: 0 0.125em;
+//         box-shadow: 0 0 0.3em rgba(141, 141, 141, 1);
+//         color: $veryLightGrey;
+//     }
+// }
+
+button:not(:where(.pagination button)) {
+    outline: none;
     font-family: $bodyFont;
-    background-color: $bg;
-    border: 0;
-    color: $fontColor;
-    border-radius: 0.5em;
-    font-size: 1.35rem; // im such a css noob idek what rem or em is, but if it works it works
-    padding: 0.375em 1em;
-    font-weight: 600;
-    transition: 0.2s ease;
-    box-shadow: 0 0 0.6em rgba(235, 235, 235, 1);
-    cursor: pointer;
+    background-color: $primary;
+    color: $background;
+    padding: 10px 20px;
+    font-size: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1rem;
+    transition: background-color 0.25s ease, color 0.25s ease, border 0.25s ease;
 
     &:hover {
-        translate: 0 0.125em;
-        box-shadow: 0 0 0.3em rgba(141, 141, 141, 1);
-        color: $veryLightGrey;
+        outline: none;
+        // background-color: lighten($color: $primary, $amount: 15);
+        background-color: $secondary;
+        color: $text;
+        cursor: pointer;
+        border: 2px solid rgba($text, 1);
     }
 }
 
-#input-container {
+.input-container {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    width: fit-content;
+    justify-content: start;
+    width: 666px;
 
     button {
         width: 20%;
@@ -114,5 +133,281 @@ button {
     label {
         margin-bottom: 5px;
         text-align: left;
+        align-self: flex-start;
     }
+
+    // for the search box animation:
+    $transitionDuration: 0.2s;
+    #search {
+        align-self: center;
+        padding: 10px;
+        border: 2px solid rgba($text, 0.6);
+        border-radius: 8px;
+        width: 666px;
+        box-sizing: border-box;
+        background-color: white;
+        color: $text;
+      
+        outline: none;
+        transition: box-shadow $transitionDuration, border $transitionDuration;
+        transition-timing-function: ease-in;
+        
+        &:focus {
+            outline: none;
+            border: 2px solid rgba($text, 1);
+            box-shadow: 0 0 50px lighten($secondary, 15%);
+            transition: box-shadow $transitionDuration, border $transitionDuration;
+            transition-timing-function: ease-in;
+        }
+
+        i {
+            align-self: center;
+        }
+    }
+}
+
+.result-item {
+    font-family: $bodyFont;
+    color: $text;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    gap: 1rem;
+}
+
+.thumbnail {
+    width: 225px;
+    height: 225px;
+    object-fit: contain;
+}
+
+.bid-link {
+    text-decoration: underline;
+    color: $text;
+
+    &:visited {
+        color: $text;
+    }
+    
+    &:hover {
+        color: $primary;
+        cursor: pointer;
+    }
+}
+
+.content {
+    flex: 1;
+}
+
+.title-link {
+    color: $primary;
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+        // color: $text // this looked weird so i commented out
+    }
+}
+
+// paginator
+// from this random ahh blog i found https://codewithcreativity.blogspot.com/2021/12/simple-pagination-in-html-and-css.html
+.pagination {
+    display: inline-block;
+    margin: 0 auto;
+    margin-bottom: 15px;
+    button {
+        font-size: 20px;
+        // float: left;
+        text-decoration: none;
+        padding: 8px 16px;
+        color: $background;
+        transition: .3s;
+        font-family: $bodyFont;
+        &:hover {
+            background: black;
+            color: $text;
+            cursor: pointer;
+        }
+    }
+}
+
+// TOOLTIPS
+// To use tooltips, find the element you want to have the tooltip show next to.
+// Set that element's CLASS to "tooltip". 
+// The tooltip text can be placed in a <span> with class "tooltiptext". 
+
+@keyframes fadeIn {
+    0% {opacity: 0%;}
+    25% {opacity: 25%;}
+    50% {opacity: 50%;}
+    75% {opacity: 75%;}
+    100% {opacity: 100%;}
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    text-decoration: underline dotted $text 1.75px;
+
+    &:hover {
+        cursor: help;
+        .tooltiptext {
+            animation: fadeIn 0.25s; // No idea why I used keyframes when I probably didn't have to lol
+            visibility: visible;
+            opacity: 100%;
+        }
+    }
+    
+    .tooltip-questionmark {
+        color: #444444; 
+        text-decoration: none;
+    }
+
+    .tooltiptext {
+        visibility: hidden;
+        opacity: 0%;
+        width: 240px;
+        background-color: $secondary;
+        color: $text;
+        text-align: center;
+        border-radius: 12px;
+        border: 3px solid $accent;
+        padding: 18px;
+        position: absolute;
+        z-index: 1;
+        top: -5px;
+        left: 110%;
+        font-family: $bodyFont;
+    
+        &::after {
+            content: "";
+            position: absolute;
+            top: 5%; // height of the arrow (idk if i'm adjusting this in the right place but it works!)
+            right: 100%;
+            margin-top: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent black transparent transparent;
+        }
+    }
+}
+
+.accordion {
+    display: flex;
+    flex-direction: column;
+    color: $text;
+    // width: min(400px, 100% - 3em);
+    // min-width: 666px; 
+    margin-inline: auto;
+    font-family: $bodyFont;
+
+    .section {
+        display: flex;
+        flex-direction: column;
+        margin: 0 auto;
+        justify-content: start;
+
+        .section-title-filters {
+            width: 635px;
+            align-self: flex-start;
+            padding: 1em;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 0.6rem;
+            border-bottom: black solid 2px;
+            border-top: black solid 2px;
+
+            i {
+                transition: transform 0.3s ease-in-out;
+            }
+        }
+
+        .section-title-conditions {
+            align-self: flex-start;
+            padding: 1em;
+            cursor: pointer;
+            user-select: none;
+            margin-top: 0.6rem;
+            border-bottom: black solid 2px;
+            border-top: black solid 2px;
+
+            i {
+                transition: transform 0.3s ease-in-out;
+            }
+        }
+
+        // .section-title {
+        //     align-self: flex-start;
+        //     padding: 1em;
+        //     cursor: pointer;
+        //     user-select: none;
+        //     margin-top: 0.6rem;
+        //     border-bottom: black solid 2px;
+        //     border-top: black solid 2px;
+
+        //     i {
+        //         transition: transform 0.3s ease-in-out;
+        //     }
+        // }
+
+        .section-content-filters {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: $background;
+
+            &.active {
+                max-height: 3000px;
+            }
+
+            .text {
+                // padding shorthand - top, right, bottom, left
+                // or top | left and right | bottom if 3 are specified
+                padding: 0rem 1rem 1rem;
+                width: 100%;
+            }
+        }
+
+        .section-content-conditions {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: $background;
+
+            &.active {
+                max-height: 2000px;
+            }
+
+            .text {
+                // padding shorthand - top, right, bottom, left
+                // or top | left and right | bottom if 3 are specified
+                padding: 0rem 1rem 1rem;
+                width: 100%;
+            }
+        }
+
+        // .section-content {
+        //     max-height: 0;
+        //     overflow: hidden;
+        //     transition: max-height 0.3s ease-out;
+        //     background-color: $background;
+
+        //     &.active {
+        //         max-height: 2000px;
+        //     }
+
+        //     .text {
+        //         // padding shorthand - top, right, bottom, left
+        //         // or top | left and right | bottom if 3 are specified
+        //         padding: 0rem 1rem 1rem;
+        //         width: 100%;
+        //     }
+        // }
+    }
+}
+
+// "class styles"
+.block {
+    display: block;
 }

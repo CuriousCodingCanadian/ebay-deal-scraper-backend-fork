@@ -1,12 +1,8 @@
 <style lang="scss">
-    $headingFont: 'Manrope', 'Segoe UI', 'Arial', sans-serif;
-    h1 {
-        font-family: $headingFont;
-        text-align: center;
-    }
+    @import "/static/style.scss";
 </style>
 
-<h1 style="font-size: 70px !important">
+<h1 class="titles" style="font-size: 70px">
     <slot>
     </slot>
 </h1>
