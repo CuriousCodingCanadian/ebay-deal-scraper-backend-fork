@@ -1,8 +1,7 @@
 <script lang="ts">
-import { Analytics } from "@vercel/analytics/react" // i hope this works
+import { injectAnalytics } from '@vercel/analytics/sveltekit' // i hope this works
+injectAnalytics()
 </script>
-
-<Analytics />
 
 <slot>
 </slot>
