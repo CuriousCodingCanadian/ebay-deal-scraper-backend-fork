@@ -26,7 +26,7 @@ function logDebug(message: string, data?: any) {
 // initialize variables
 let tokenCache: TokenInfo | null = null;
 let authRetries = 0;
-let page = 1;
+let page = 1; // this doesn't seem to be used anymore but i dont want to break anything so im not gonna remove it xd
 
 // OAuth api authentication variables
 const MAX_AUTH_RETRIES = 3; // if OAuth key fails to authenticate, it will generate a new key 3 times before aborting 
@@ -95,6 +95,7 @@ export const load: PageServerLoad = async ({ url }) => {
     const pageNumber = page ? parseInt(page, 10) : 1; // convert string to number
     const minPrice = url.searchParams.get('minPrice');
     const maxPrice = url.searchParams.get('maxPrice');
+    const condition = url.searchParams.get('condition')
 
     const limit = 20;
     const offset = (pageNumber - 1) * limit;
@@ -147,7 +148,7 @@ export const load: PageServerLoad = async ({ url }) => {
             apiSort = ""; // Default to best match
     }
 
-    let apiLimitOffset = `&limit=${limit}&offset=${offset}` // page
+    const apiLimitOffset = `&limit=${limit}&offset=${offset}` // page
 
     let apiMinMaxPrice = ''
     if (minPrice && !maxPrice) { // only MIN PRICE is specified
@@ -160,7 +161,9 @@ export const load: PageServerLoad = async ({ url }) => {
         apiMinMaxPrice = ''
     }
 
-    let apiFilters = `&filter=buyingOptions:${apiFilter}${apiMinMaxPrice}`
+    const apiCondition = `,conditionIds:{${condition}}`
+
+    const apiFilters = `&filter=buyingOptions:${apiFilter}${apiMinMaxPrice}${apiCondition}`
 
     const finalURL = `${endpoint}${apiSearchQuery}${apiFilters}${apiSort}${apiLimitOffset}`
     logDebug(`Final URL for API call: ${finalURL}`)
@@ -283,6 +286,84 @@ export const load: PageServerLoad = async ({ url }) => {
                     logDebug("Item number not found in URL.");
                 }
 
+                // Replaced with Lookup Table:
+
+                // let itemCondition = ''
+                // switch (item.conditionId) {
+                //     case "1000":
+                //         itemCondition = "New";
+                //         break;
+                //     case "1500":
+                //         itemCondition = "Open Box";
+                //         break;
+                //     case "1750":
+                //         itemCondition = "New (with defects)"; // default is best match
+                //         break;
+                //     case "2000":
+                //         itemCondition = "Certified Refurbished";
+                //         break;
+                //     case "2010":
+                //         itemCondition = "Excellent - Refurbished"
+                //         break;
+                //     case "2020":
+                //         itemCondition = "Very Good - Refurbished"
+                //         break;
+                //     case "2030":
+                //         itemCondition = "Good - Refurbished"
+                //         break;
+                //     case "2500":
+                //         itemCondition = "Seller Refurbished"
+                //         break;
+                //     case "2750":
+                //         itemCondition = "Used - Like New"
+                //         break;
+                //     case "2990":
+                //     case "3000":
+                //         itemCondition = "Used - Excellent"
+                //         break;
+                //     case "3010":
+                //     case "4000":
+                //         itemCondition = "Used - Very Good"
+                //         break;
+                //     case "5000":
+                //         itemCondition = "Used - Good"
+                //         break;
+                //     case "6000":
+                //         itemCondition = "Used - Fair"
+                //         break;
+                //     case "7000":
+                //         itemCondition = "For parts or not working"
+                //         break;
+                //     default:
+                //         // Fallback
+                //         console.warn(`Unexpected sort value: ${sort} - defaulting to "Undefined"`);
+                //         apiSort = "Undefined"; // Default to best match
+                // }
+
+                const conditionMap: Record<string, string> = {
+                    "1000": "New",
+                    "1500": "Open Box",
+                    "1750": "New (with defects)",
+                    "2000": "Certified Refurbished",
+                    "2010": "Excellent - Refurbished",
+                    "2020": "Very Good - Refurbished",
+                    "2030": "Good - Refurbished",
+                    "2500": "Seller Refurbished",
+                    "2750": "Used - Like New",
+                    "2990": "Used - Excellent",
+                    "3000": "Used - Excellent",
+                    "3010": "Used - Very Good",
+                    "4000": "Used - Very Good",
+                    "5000": "Used - Good",
+                    "6000": "Used - Fair",
+                    "7000": "For parts or not working"
+                };
+                
+                function getItemCondition(cid: string): string {
+                    const itemCondition = conditionMap[cid] || "Undefined";
+                    if (itemCondition === "Undefined") logDebug(`Unexpected condition ID: ${cid} - defaulting to "Undefined"`)
+                    return itemCondition;
+                }
 
                 const processed = {
                     title: item.title,
@@ -298,6 +379,7 @@ export const load: PageServerLoad = async ({ url }) => {
                     sellerName: item.seller?.username || 'N/A',
                     feedbackScore: item.seller?.feedbackScore || 0,
                     feedbackPercentage: item.seller?.feedbackPercentage || '0',
+                    condition: getItemCondition(item.conditionId),
                 };
                 return processed;
             });

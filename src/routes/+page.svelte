@@ -8,7 +8,7 @@
 </style>
 
 <main id="sveltekit-body">
-    <Titles>eBay Deal Scraper</Titles>
-    <p class="warning" style="text-align: center !important;"><span class="warning-red">Known Issue:</span> This site is in alpha&semi; features may be broken. Report issues to charlies.retro.computing@gmail.com</p>
+    <Titles class="" id="" inlinestyle="">eBay Deal Scraper</Titles>
+    <p class="warning" style="text-align: center; font-size: 1.25em;"><strong><span class="warning-red">IMPORTANT:</span> This site is in alpha&semi; features may be broken. Report issues or request features with <a href="https://docs.google.com/forms/d/e/1FAIpQLScuZlY43CYsrOHs-bKopbHylZT2hW9HrDU7vsNBifN6OdAkjw/viewform?usp=dialog">this form.</a></strong></p>
     <Filters />
 </main> 

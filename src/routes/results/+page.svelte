@@ -9,6 +9,11 @@
     let allResults: SearchResult[] = data?.results || [];
     let browserIsFirefox: boolean = false; // Declare outside, initialize to a default value
     let currentPage: number = 1; // Declare outside, initialize to a default value
+    let currentPageIsOne: boolean = false;
+    let goToBaseUrl: () => void;
+    let homeButton: () => void;
+    let back: () => void;
+    let forward: () => void;
 
     onMount(() => {
         const url = new URL(window.location.href);
@@ -18,28 +23,29 @@
 
         // Variable for current page
         currentPage = parseInt(url.searchParams.get("page") || "1", 10);
+        if (currentPage === 1) currentPageIsOne = true
+
+        back = () => {
+            const url = new URL(window.location.href); // Declare url inside back
+            url.searchParams.set("page", Math.max(1, currentPage - 1).toString());
+            window.location.href = url.toString();
+        };
+
+        forward = () => {
+            const url = new URL(window.location.href); // Declare url inside forward
+            url.searchParams.set("page", (currentPage + 1).toString());
+            window.location.href = url.toString();
+        };
+
+        goToBaseUrl = () => goto(new URL(window.location.href).origin);
+
+        homeButton = () => {
+            Array.from(document.getElementsByClassName("fa-house-chimney")).forEach(button => {
+                button.addEventListener("click", () => goToBaseUrl());
+            });
+        }
+        homeButton()
     });
-
-    function back() {
-        const url = new URL(window.location.href); // Declare url inside back
-        url.searchParams.set("page", Math.max(1, currentPage - 1).toString());
-        window.location.href = url.toString();
-    }
-
-    function forward() {
-        const url = new URL(window.location.href); // Declare url inside forward
-        url.searchParams.set("page", (currentPage + 1).toString());
-        window.location.href = url.toString();
-    }
-
-    function goToBaseUrl() {
-        const url = new URL(window.location.href);
-        const baseUrl = url.origin;
-        const urlString = url.toString(); // Converts URL to string
-        window.location.href = baseUrl;
-    }
-
-
 </script>
 
 <style lang="scss">
@@ -47,8 +53,11 @@
 </style>
 
 <main id="sveltekit-body">
-    <button style="margin-top: 15px !important;" on:click={goToBaseUrl}>Home</button>
-    <Titles>Search Results</Titles>
+    <div id="searchresults-title-flexbox">
+        <!-- <button style="margin-top: 15px !important;" on:click={goToBaseUrl}>Home</button> -->
+        <div class="fa-solid fa-house-chimney inline-block"></div>
+        <Titles class="" id="" inlinestyle="justify-self:center; align-self:start; margin-top: -15px; margin-bottom: 10px;">Search results</Titles>
+    </div>
 
         {#if browserIsFirefox}
             <p class="warning" style="text-align: center !important;"><span class="warning-red">Warning:</span> Firefox browser detected. If the images aren't loading properly, please disable <strong>Enhanced Tracking Protection</strong> for this site.</p>
@@ -75,6 +84,7 @@
                         {:else}
                             <p>Price: N/A (Internal Server Error)</p>
                         {/if}
+                        <p>Condition: {result.condition}</p>
                         <p><em>{result.shipping === 'Free' ? 'Free' : `${result.shipping}`}</em></p>
                         {#if result.type === 'FIXED_PRICE'}
                             <p>Type: Buy It Now</p>
@@ -108,9 +118,9 @@
     </div> -->
 
     <div class="pagination">
-        {#if currentPage > 1}
-            <button on:click={back}>« Back</button>
-        {/if}
-        <button on:click={forward}>Forward »</button>
+        <!-- {#if currentPage > 1} -->
+        <button disabled="{currentPageIsOne}" on:click={back} aria-label="Previous Page"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;Forward</button>
+        <!-- {/if} -->
+        <button on:click={forward} aria-label="Next Page">Back&nbsp;&nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
     </div>
 </main>

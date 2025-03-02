@@ -14,6 +14,7 @@ export interface SearchResult {
     sellerName: string;
     feedbackScore: number;
     feedbackPercentage: string;
+    condition: string;
 }
 
 export interface ApiResponse {
@@ -54,6 +55,7 @@ export interface EbayItem {
         feedbackScore: number;
         feedbackPercentage: string;
     };
+    conditionId: string;
 }
 
 export interface TokenInfo {
