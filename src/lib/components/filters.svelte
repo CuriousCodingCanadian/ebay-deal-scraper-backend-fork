@@ -11,71 +11,50 @@
     let maxPrice = "";
     let loading = false;
     let condition = "";
-    console.log('🔄 [Client] Debug: Components and variables initialized');
-
-    function watchVariable(varName: string, callback: () => void) {
-        let obj = new Proxy({ [varName]: false }, {
-            set(target, key, value) {
-                if (key === varName && value === true) {
-                    callback();
-                    target[key as string] = false;
-                } else {
-                    target[key as string] = value;
-                }
-                return true;
-            }
-        });
-        return obj;
-    }
 
     function buildConditionString() {
-        const checkedBoxes = document.querySelectorAll('.condition-box:checked') as NodeListOf<HTMLInputElement>;
-    
-        // Map the checked boxes to their data-id values
-        const conditionIds = Array.from(checkedBoxes)
+        const conditionIds = Array.from(document.querySelectorAll('.condition-box:checked') as NodeListOf<HTMLInputElement>)
             .map(box => box.getAttribute('data-id'))
             .filter(id => id !== null && id !== "")
-            .join('|');
-        
-        const condition = conditionIds.replace(/\|{2,}/g, '|');
+            .join('|');    
+        const condition = encodeURIComponent(conditionIds.replace(/\|{2,}/g, '|'));
         console.log(`[Client] Debug: Condition String: ${condition}`)
-        // Clean up any consecutive pipes
         return condition
     }
 
-function handleSubmit() {
-    if (searchQuery === '') { 
-        alert(`Error: no search query entered.`)
-    } else { 
-        pageNumber = 1; // Reset page number on new search
-        loading = true;
+    function handleSubmit() {
+        if (searchQuery === '') { 
+            alert(`Error: no search query entered.`)
+        } else { 
+            pageNumber = 1; // Reset page number on new search
+            loading = true;
 
-        let filter = '';
-        if (filterAuction === filterBuyItNow) {
-            filter = 'all';
-        } else if (filterAuction) {
-            filter = 'auction';
-        } else if (filterBuyItNow) {
-            filter = 'buy-it-now';
+            let filter = '';
+            if (filterAuction === filterBuyItNow) {
+                filter = 'all';
+            } else if (filterAuction) {
+                filter = 'auction';
+            } else if (filterBuyItNow) {
+                filter = 'buy-it-now';
+            }
+
+            // Build the condition string during form submission
+            condition = buildConditionString();
+            
+            const queryParams = new URLSearchParams({
+                search: searchQuery,
+                filter: filter,
+                sort: sortBy,
+                page: pageNumber.toString(),
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                condition: condition,
+            }).toString();
+            
+            goto(`/results?${queryParams}`);
+            console.log('[Client] Debug: Navigating to results page:', `/results?${queryParams}`);
         }
-
-        // Build the condition string during form submission
-        condition = buildConditionString();
-        
-        const queryParams = new URLSearchParams({
-            search: searchQuery,
-            filter: filter,
-            sort: sortBy,
-            page: pageNumber.toString(),
-            minPrice: minPrice,
-            maxPrice: maxPrice,
-            condition: condition,
-        }).toString();
-        
-        goto(`/results?${queryParams}`);
-        console.log('[Client] Debug: Navigating to results page:', `/results?${queryParams}`);
     }
-}
 
     function handleSubmitEnter(kbdevent: KeyboardEvent) {
         if (kbdevent.key === "Enter") {
@@ -84,32 +63,6 @@ function handleSubmit() {
     }
 
     onMount(() => {
-        // Accordion for Filters
-        // let isFiltersAccordionOpen = false;
-        // const filtersAccordionTitle = document.querySelector("#section-title-filters");
-        // const filtersAccordionContent = document.querySelector("#section-content-filters") as HTMLElement;
-        // const filtersAccordionIcon = document.querySelector("#filters-accordion-chevron") as HTMLElement;
-
-        // if (filtersAccordionTitle && filtersAccordionContent && filtersAccordionIcon) {
-        //     console.log(`[Client] Debug: DOM Elements for accordion "Search Filters" Found!`)
-        //     filtersAccordionTitle.addEventListener("click", () => {
-        //         console.log(`[Client] Debug: EventListener: Accordion "Search Filters" Clicked`)
-        //         isFiltersAccordionOpen = !isFiltersAccordionOpen;
-                
-        //         if (isFiltersAccordionOpen) {
-        //             filtersAccordionContent.style.maxHeight = `${filtersAccordionContent.scrollHeight}px`;
-        //             filtersAccordionIcon.style.transform = "rotate(90deg)";
-        //             filtersAccordionContent.classList.add("active");
-        //             console.log(`[Client] Debug: Accordion "Search Filters" Opened`)
-        //         } else {
-        //             filtersAccordionContent.style.maxHeight = "0";
-        //             filtersAccordionIcon.style.transform = "rotate(0deg)";
-        //             filtersAccordionContent.classList.remove("active");
-        //             console.log(`[Client] Debug: Accordion "Search Filters" Closed`)
-        //         }
-        //     });
-        // } else { console.error(`[Client] Debug: DOM Elements for accordion "Search Filters" not found`) }
-
         let isFiltersAccordionOpen = false;
         const filtersAccordionTitle = document.querySelector("#section-title-filters");
         const filtersAccordionContent = document.querySelector("#section-content-filters") as HTMLElement;
@@ -144,9 +97,9 @@ function handleSubmit() {
                 }
             });
 
-            resizeObserver.observe(document.querySelector("#text-filters") as HTMLElement);
+            resizeObserver.observe(document.querySelector("#text-filters") as HTMLElement); // resize accordion if height changes
 
-        } else { console.error(`[Client] Debug: DOM Elements for accordion "Search Filters" not found`); }
+        } else {console.error(`[Client] Debug: DOM Elements for accordion "Search Filters" not found`)}
        
 
         // checkbox shit 2.0
