@@ -10,8 +10,8 @@
     let browserIsFirefox: boolean = false; // Declare outside, initialize to a default value
     let currentPage: number = 1; // Declare outside, initialize to a default value
     let currentPageIsOne: boolean = false;
-    let goToBaseUrl: () => void;
-    let homeButton: () => void;
+    // let goToBaseUrl: () => void;
+    let getBaseUrl: string;
     let back: () => void;
     let forward: () => void;
 
@@ -37,14 +37,8 @@
             window.location.href = url.toString();
         };
 
-        goToBaseUrl = () => goto(new URL(window.location.href).origin);
-
-        homeButton = () => {
-            Array.from(document.getElementsByClassName("fa-house-chimney")).forEach(button => {
-                button.addEventListener("click", () => goToBaseUrl());
-            });
-        }
-        homeButton()
+        getBaseUrl = new URL(window.location.href).origin
+        // goToBaseUrl = () => goto(getBaseUrl);
     });
 </script>
 
@@ -54,15 +48,20 @@
 
 <main id="sveltekit-body">
     <div id="searchresults-title-flexbox">
-        <!-- <button style="margin-top: 15px !important;" on:click={goToBaseUrl}>Home</button> -->
-        <div class="fa-solid fa-house-chimney inline-block"></div>
+        <a href={getBaseUrl} class="inline-block" aria-label="Go to home page">
+            <div class="fa-solid fa-house-chimney inline-block" aria-label="Go to home page"></div>
+        </a>          
         <Titles class="" id="" inlinestyle="justify-self:center; align-self:start; margin-top: -15px; margin-bottom: 10px;">Search results</Titles>
     </div>
 
-        {#if browserIsFirefox}
+        <!-- Commented out because I fixed this with an image proxy -->
+        <!-- {#if browserIsFirefox}
             <p class="warning" style="text-align: center !important;"><span class="warning-red">Warning:</span> Firefox browser detected. If the images aren't loading properly, please disable <strong>Enhanced Tracking Protection</strong> for this site.</p>
-        {/if}
-            <p class="warning" style="text-align: center !important;"><span class="warning-red">Possible Bug:</span> Your timezone <em>may</em> be incorrectly recognized, causing listing end times to be off. This issue is being investigated.</p>
+        {/if} -->
+
+        <!-- Commented out because I don't think this is an issue / this is happening -->
+            <!-- <p class="warning" style="text-align: center !important;"><span class="warning-red">Possible Bug:</span> Your timezone <em>may</em> be incorrectly recognized, causing listing end times to be off. This issue is being investigated.</p> -->
+        
         <div id="results-container">
         {#if allResults && allResults.length > 0}
             {#each allResults as result}

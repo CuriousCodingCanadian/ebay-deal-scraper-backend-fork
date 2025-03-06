@@ -375,7 +375,7 @@ export const load: PageServerLoad = async ({ url }) => {
                     timeRemaining: timeRemaining,
                     link: item.itemWebUrl,
                     itemnumber: itemnumber,
-                    thumbnail: item.image?.imageUrl || '',
+                    thumbnail: 'https://wsrv.nl/?url=' + encodeURIComponent(item.image?.imageUrl) || '',
                     sellerName: item.seller?.username || 'N/A',
                     feedbackScore: item.seller?.feedbackScore || 0,
                     feedbackPercentage: item.seller?.feedbackPercentage || '0',

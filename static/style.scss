@@ -1,4 +1,5 @@
 @use "sass:color";
+@import "/static/vars.scss";
 
 /* Manrope Font, Bitter Font, EB Garamond Google Font imports */
 // I moved these to the <app.html> file
@@ -11,8 +12,6 @@
 //         url("/appleFonts/SF-Pro.woff2") format("woff2"),
 //         url("/appleFonts/SF-Pro.ttf") format("truetype"),
 // }
-
-@import "/static/vars.scss";
 
 #sveltekit-body {
     margin: 20px 20px 20px 20px;
@@ -418,16 +417,26 @@ option {
     grid-template-rows: 1fr;
     padding: 10px 10px 10px 10px;
     
-
-    div { // home button
+    a {
         justify-self: start;
         align-self: start;
-
-        &:hover {
-            cursor: pointer; 
+        color: black;
+        &:hover, &:active, &:visited {
+            color: black;
         }
     }
 
+    div { // home button
+        // border: none;
+        // background-color: transparent;
+        // cursor: default;
+        // justify-self: start;
+        // align-self: start;
+        &:hover {
+            cursor: pointer;
+            // background-color: transparent;
+        }
+    }
     // Styles for the title set with the custom "inlinestyle" prop
 }
 
