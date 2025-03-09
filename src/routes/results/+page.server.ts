@@ -89,6 +89,7 @@ export const load: PageServerLoad = async ({ url }) => {
     // set variables for the API call
     // example url http://localhost:5173/results?search=QUERY&filter=buy-it-now&sort=-price&page=1&minPrice={price}&maxPrice={price}
     const searchQuery = url.searchParams.get('search'); // example value: "QUERY" without quotes
+    const exclusions = decodeURIComponent(url.searchParams.get('exclude'));
     const filter = url.searchParams.get('filter');
     const sort = url.searchParams.get('sort');
     const page = url.searchParams.get('page');
@@ -106,7 +107,10 @@ export const load: PageServerLoad = async ({ url }) => {
     const endpoint = 'https://api.ebay.com/buy/browse/v1/item_summary/search?';
 
     // modified variables
-    const apiSearchQuery = `q=${searchQuery ? searchQuery.replace(/ /g, '%20') : ''}`
+    // const apiSearchQuery = `q=${searchQuery ? searchQuery.replace(/ /g, '%20') : ''}`
+    const apiSearchQuery = `q=${encodeURIComponent(searchQuery)}`;
+    const apiExclusions = exclusions.split(",+").map(word => `-"${word}"`).join("+");
+    const apiFinalSearch = `${apiSearchQuery}+${apiExclusions}`;
 
     let apiFilter = ''; // empty string initializes
     switch (filter) {
@@ -165,7 +169,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
     const apiFilters = `&filter=buyingOptions:${apiFilter}${apiMinMaxPrice}${apiCondition}`
 
-    const finalURL = `${endpoint}${apiSearchQuery}${apiFilters}${apiSort}${apiLimitOffset}`
+    const finalURL = `${endpoint}${apiFinalSearch}${apiFilters}${apiSort}${apiLimitOffset}`
     logDebug(`Final URL for API call: ${finalURL}`)
 
     // starting here, the backend code is AI generated with some modifications made by me

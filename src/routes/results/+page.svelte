@@ -3,6 +3,7 @@
     import type { PageData, SearchResult } from '$lib/types.ts';
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
+    import Tooltip from "$lib/components/tooltip.svelte";
 
     export let data: PageData;
 
@@ -103,12 +104,19 @@
                             <p>Type: {result.type}</p>
                         {/if}
 
-                        <p>Seller: {result.sellerName} &lpar;<span class="tooltip">{result.feedbackScore}<sup class="tooltip-questionmark">?</sup> <span class="tooltiptext"><b>Feedback Score</b><br><br>eBay Feedback Score is another way to check the credibility of a seller, instead of the positive review percentage. <br><br>
+                        <p>Seller: {result.sellerName} &lpar;
+                            <Tooltip
+                                title="Feedback Score" 
+                                text="eBay Feedback Score is another way to check the credibility of a seller, instead of the positive review percentage. <br><br>
                             Here's how it works: <br>
                                 - If a buyer leaves a positive review, it adds +1 point to the Credibility Score.<br>
                                 - Neutral reviews don't add or remove any points so the score stays the same.<br>
                                 - Negative reviews take away -1 point.<br><br>
-                            However, this is not as accurate of a measurement for smaller sellers, because a seller with a lower credibility score might still be credible, and they just don't have as many reviews/feedback yet.</span></span>&rpar; ({result.feedbackPercentage}% positive reviews)
+                            However, this is not as accurate of a measurement for smaller sellers, because a seller with a lower credibility score might still be credible, and they just don't have as many reviews/feedback yet." 
+                                fontsize="1rem"
+                                questionmark
+                            >{result.feedbackScore}
+                            </Tooltip>&rpar; ({result.feedbackPercentage}% positive reviews)
                         </p>
                     </div>
                 </div>

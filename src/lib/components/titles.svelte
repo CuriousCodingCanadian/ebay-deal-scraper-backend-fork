@@ -1,30 +1,3 @@
-<!-- <script lang="ts">
-    let { children, large = false, medium = false, small = false, style = '' } = $props();
-  
-    // Determine size based on the provided props
-    let size = $state('48px'); // default to medium
-    if (large) {
-      size = "70px";
-    } else if (medium) {
-      size = "48px";
-    } else if (small) {
-      size = "32px";
-    }
-</script>
-  
-<style lang="scss">
-    @import '/static/styles/vars.scss';
-    .titles {
-      font-family: $headingFont;
-      text-align: center; 
-      color: $text;
-    }
-</style>
-  
-<h1 class="titles" style="font-size: {size}; {style}">
-    {@render children()}
-</h1>   -->
-
 <script lang="ts">
     // Destructure known props and capture the rest in "rest"
     let { children, large = false, medium = false, small = false, style = '', ...rest } = $props();

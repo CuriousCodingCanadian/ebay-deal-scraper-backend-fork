@@ -1,7 +1,7 @@
 @use "sass:color";
+
 @import '/static/styles/vars.scss';
 @import '/static/styles/resultspage.scss';
-@import '/static/styles/tooltips.scss';
 @import '/static/styles/temutailwind.scss';
 @import '/static/styles/paginator.scss';
 
@@ -39,20 +39,27 @@ option {
         width: 666px;
 
         label {
-            margin-bottom: 5px;
+            margin-bottom: 0.25rem;
             text-align: left;
             align-self: flex-start;
             font-size: 1rem;
         }
 
-        // for the search box animation:
+        .search-row {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
         $transitionDuration: 0.2s;
         #search {
+            flex: 1;
             align-self: center;
             padding: 10px;
             border: 2px solid rgba($text, 0.6);
-            border-radius: 8px;
+            border-radius: 0.75rem;
             width: 666px;
+            height: 40px;
             box-sizing: border-box;
             background-color: white;
             color: $text;
@@ -64,7 +71,7 @@ option {
             &:focus {
                 outline: none;
                 border: 2px solid rgba($text, 1);
-                box-shadow: 0 0 50px lighten($secondary, 15%);
+                box-shadow: 0 0 50px color.adjust($secondary, $lightness: 15%);
                 transition: box-shadow $transitionDuration, border $transitionDuration;
                 transition-timing-function: ease-in;
             }
@@ -73,29 +80,32 @@ option {
                 align-self: center;
             }
         }
-    }
 
-    .searchbutton {
-        outline: none;
-        border: none;
-        font-family: $bodyFont;
-        background-color: $primary;
-        color: $background;
-        padding: 10px 20px;
-        margin: 20px auto 0px;
-        font-size: 1.5rem;
-        width: 120px;
-        height: 48px;
-        border-radius: 1rem;
-        transition: background-color 0.25s ease, color 0.25s ease, border 0.25s ease;
-    
-        &:hover {
-            // background-color: lighten($color: $primary, $amount: 15);
-            background-color: $secondary;
-            color: $text;
-            cursor: pointer;
-            border: 2px solid rgba($text, 1);
-        }
+        .searchbutton {
+            align-self: stretch;
+            white-space: nowrap;
+            outline: none;
+            border: none;
+            font-family: $bodyFont;
+            background-color: $primary;
+            color: $background;
+            // padding: 10px 20px;
+            // margin: 20px auto 0px;
+            // padding: 0 20px;
+            margin: 0;
+            font-size: 1.35rem;
+            width: 120px;
+            height: 40px;
+            border-radius: 0.75rem;
+            transition: background-color 0.25s ease, color 0.25s ease, border 0.25s ease;
+        
+            &:hover {
+                background-color: $secondary;
+                color: $text;
+                cursor: pointer;
+                border: 2px solid rgba($text, 1);
+            }
+        } 
     }
 
     .accordio {
@@ -202,7 +212,7 @@ option {
             &:focus {
                 outline: none;
                 border: 2px solid rgba($text, 1);
-                box-shadow: 0 0 50px lighten($secondary, 15%);
+                box-shadow: 0 0 50px color.adjust($secondary, $lightness: 15%);
                 transition: box-shadow $transitionDuration, border $transitionDuration;
                 transition-timing-function: ease-in;
             }
@@ -230,7 +240,6 @@ option {
         // ^^ unnecessary line
     
         &:hover {
-            // background-color: lighten($color: $primary, $amount: 15);
             background-color: $secondary;
             color: $text;
             cursor: pointer;
@@ -283,6 +292,7 @@ option {
                 transition: max-height 0.3s ease-out;
                 background-color: $background;
                 align-self: start;
+                width: 100%;
     
                 // &.active {
                 //     // max-height: 3000px;

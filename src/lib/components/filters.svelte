@@ -1,8 +1,10 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
+    import Tooltip from './tooltip.svelte';
 
     let searchQuery = "";
+    let exclusions = ""
     let filterAuction = true;
     let filterBuyItNow = true;
     let sortBy = 'best-match';
@@ -11,6 +13,13 @@
     let maxPrice = "";
     let loading = false;
     let condition = "";
+
+    $: exclusions = exclusions
+    .replace(/[^a-zA-Z, ]/g, "")           // Allow only lowercase letters and commas
+    .replace(/\s{2,}/g, " ")            // Replace consecutive spaces with a single space
+    .replace(/,{2,}/g, ",")             // Prevent consecutive commas
+    .replace(/,\s{2,}/g, ", ")          // Prevent ",  , " (comma + multiple spaces)
+    .replace(/(,)\1+/g, ",");           // Prevent consecutive commas (like , , ,)
 
     function buildConditionString() {
         const conditionIds = Array.from(document.querySelectorAll('.condition-box:checked') as NodeListOf<HTMLInputElement>)
@@ -23,8 +32,10 @@
     }
 
     function handleSubmit() {
+        searchQuery === ''
         if (searchQuery === '') { 
             alert(`Error: no search query entered.`)
+            console.log(`Exclusions: ${exclusions}`)
         } else { 
             pageNumber = 1; // Reset page number on new search
             loading = true;
@@ -38,11 +49,13 @@
                 filter = 'buy-it-now';
             }
 
+
             // Build the condition string during form submission
             condition = buildConditionString();
             
             const queryParams = new URLSearchParams({
                 search: searchQuery,
+                exclude: exclusions,
                 filter: filter,
                 sort: sortBy,
                 page: pageNumber.toString(),
@@ -50,7 +63,7 @@
                 maxPrice: maxPrice,
                 condition: condition,
             }).toString();
-            
+             
             goto(`/results?${queryParams}`);
             console.log('[Client] Debug: Navigating to results page:', `/results?${queryParams}`);
         }
@@ -176,6 +189,7 @@
 
 <div class="input-container">
     <label for="search">Search:</label>
+    <div class="search-row">
     <input 
         type="text"
         id="search" 
@@ -183,11 +197,17 @@
         on:input={() => console.log('📝 [Client] Debug: Search query updated:', searchQuery)} 
         on:keydown={handleSubmitEnter}
         placeholder="Enter search query..." />
+        <button type="submit" class="searchbutton" on:click={handleSubmit}>Search</button>
+    </div>
     <div class="accordio">
         <div class="section">
             <div class="section-title-filters" id="section-title-filters"><i id="filters-accordion-chevron" class="fa-solid fa-chevron-right" aria-hidden="true"></i>&nbsp;&nbsp;Search Filters</div>
             <div class="section-content-filters" id="section-content-filters"> 
                 <div class="text" id="text-filters">
+                    <br>
+                    <!-- <label class="block" for="exclusions"><span class="tooltip">Exclude Words<sup class="tooltip-questionmark">?</sup>: <span class="tooltiptext"><b>Exclude Words</b><br><br>Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word "box", you can type the word "box" into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code><br><br><strong>You can easily insert commas by pressing space on your keyboard.</strong></span></span></label>  -->
+                    <label class="block" for="exclusions"><Tooltip fontsize="0.9rem" questionmark title="Exclude Words" text="Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word &quot;box&quot;, you can type the word &quot;box&quot; into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code>">Exclude Words</Tooltip></label>
+                    <input class="block" type="text" id="exclusions" bind:value={exclusions} on:input={() => console.log('📝 [Client] Debug: Search Exclusions updated:', exclusions)} placeholder="Enter words to exclude...">
                     <br>
                     <label for="listing-type">Listing Type:</label>
                     <div id="listing-type">
@@ -321,7 +341,6 @@
             </div>
         </div>
     </div>
-    <button type="submit" class="searchbutton" on:click={handleSubmit}>Search</button>
     {#if loading}
         <br>
         <p class="warning" style="text-align: center !important;">Loading...</p>
