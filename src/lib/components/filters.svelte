@@ -171,7 +171,7 @@
 </script>
 
 <style lang="scss">
-    @import "/static/style.scss";
+    @import "/static/styles/style.scss";
 </style>
 
 <div class="input-container">
@@ -321,7 +321,7 @@
             </div>
         </div>
     </div>
-    <button type="submit" style="margin-top: 35px !important;" class="searchbutton" on:click={handleSubmit}>Search</button>
+    <button type="submit" class="searchbutton" on:click={handleSubmit}>Search</button>
     {#if loading}
         <br>
         <p class="warning" style="text-align: center !important;">Loading...</p>

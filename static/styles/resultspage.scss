@@ -1,0 +1,86 @@
+@import '/static/styles/vars.scss';
+
+.result-item {
+    font-family: $bodyFont;
+    color: $text;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    gap: 1rem;
+}
+
+.thumbnail {
+    width: 225px;
+    height: 225px;
+    object-fit: contain;
+}
+
+.bid-link {
+    text-decoration: underline;
+    color: $text;
+
+    &:visited {
+        color: $text;
+    }
+    
+    &:hover {
+        color: $primary;
+        cursor: pointer;
+    }
+}
+
+.content {
+    flex: 1;
+}
+
+.title-link {
+    color: $primary;
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+        // color: $text // this looked weird so i commented out
+    }
+}
+
+.result-item {
+    font-family: $bodyFont;
+    color: $text;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    display: flex;
+    gap: 1rem;
+}
+
+
+
+
+#searchresults-title-flexbox { // not actually a flexbox lmao
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-rows: 1fr;
+    padding: 10px 10px 10px 10px;
+    
+    a {
+        justify-self: start;
+        align-self: start;
+        color: black;
+        &:hover, &:active, &:visited {
+            color: black;
+        }
+    }
+
+    div { // home button
+        &:hover {
+            cursor: pointer;
+        }
+    }
+    // Styles for the title set with the custom "inlinestyle" prop
+}
+
+.fa-house-chimney {
+    font-size: 3rem;
+}

@@ -15,6 +15,8 @@
     let back: () => void;
     let forward: () => void;
 
+    let width: number;
+
     onMount(() => {
         const url = new URL(window.location.href);
 
@@ -28,13 +30,13 @@
         back = () => {
             const url = new URL(window.location.href); // Declare url inside back
             url.searchParams.set("page", Math.max(1, currentPage - 1).toString());
-            window.location.href = url.toString();
+            goto(url.toString());
         };
 
         forward = () => {
             const url = new URL(window.location.href); // Declare url inside forward
             url.searchParams.set("page", (currentPage + 1).toString());
-            window.location.href = url.toString();
+            goto(url.toString());
         };
 
         getBaseUrl = new URL(window.location.href).origin
@@ -42,16 +44,24 @@
     });
 </script>
 
+<svelte:window bind:innerWidth={width} />
+
 <style lang="scss">
-    @import "/static/style.scss";
+    @import "/static/styles/style.scss";
 </style>
 
 <main id="sveltekit-body">
     <div id="searchresults-title-flexbox">
         <a href={getBaseUrl} class="inline-block" aria-label="Go to home page">
             <div class="fa-solid fa-house-chimney inline-block" aria-label="Go to home page"></div>
-        </a>          
-        <Titles class="" id="" inlinestyle="justify-self:center; align-self:start; margin-top: -15px; margin-bottom: 10px;">Search results</Titles>
+        </a>
+    
+    <main id="sveltekit-body">
+        {#if width >= 888}
+        <Titles large style="margin-top: -15px; margin-bottom: 15px;">Search Results</Titles>
+        {:else}
+        <Titles custom-58px style="margin-top: -15px; margin-bottom: 15px;">Search Results</Titles>
+        {/if}
     </div>
 
         <!-- Commented out because I fixed this with an image proxy -->
