@@ -31,6 +31,11 @@ option {
 
 // DESKTOP AND MOBILE STYLES FOR HOME PAGE
 @media (min-width: $breakpoint) { // Desktop styles
+
+    :root {
+        font-size: 16px;
+    }
+
     .input-container {
         margin: 0 auto;
         display: flex;
@@ -47,6 +52,7 @@ option {
 
         .search-row {
             display: flex;
+            flex-direction: row;
             gap: 10px;
             width: 100%;
         }
@@ -223,14 +229,22 @@ option {
         }
     }
 
+    .search-row {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
     .searchbutton {
+        align-self: stretch;
+        flex: 1;
         outline: none;
         border: none;
         font-family: $bodyFont;
         background-color: $primary;
         color: $background;
         padding: 10px;
-        margin: 20px auto 0px;
+        margin: 1.25rem auto 0.5rem;
         font-size: 1.6rem;
         width: 144px;
         height: 54px;
