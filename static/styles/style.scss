@@ -181,6 +181,35 @@ option {
             // }
         }
     }
+
+    // condition checkboxes
+    .condition-box {
+        color: $text;
+        font-family: $bodyFont;
+        // &:hover {
+        //     cursor: pointer;
+        // }
+    }
+
+    .indented-condition-box {
+        margin-left: 1.8rem;
+    }
+
+    .panel {
+        display: none;
+        overflow: hidden;
+    }
+
+    .condition-accordion-caret {
+        transition: transform 0.25s ease-in-out;
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .fa-caret-down {
+        font-size: 1.25rem;
+    }
 }
 
 @media (max-width: $breakpoint) { // Mobile styles
@@ -201,7 +230,7 @@ option {
 
         // for the search box animation:
         $transitionDuration: 0.2s;
-        #search {
+        #search { // search BOX
             align-self: center;
             padding: 10px;
             border: 2px solid rgba($text, 0.6);
@@ -210,6 +239,8 @@ option {
             box-sizing: border-box;
             background-color: white;
             color: $text;
+            font-size: 1rem;
+            height: 44px;
         
             outline: none;
             transition: box-shadow $transitionDuration, border $transitionDuration;
@@ -229,13 +260,13 @@ option {
         }
     }
 
-    .search-row {
+    .search-row { // search box + button flexbox container (row on desktop, column on mobile)
         display: flex;
         flex-direction: column;
         width: 100%;
     }
 
-    .searchbutton {
+    .searchbutton { // search BUTTON
         align-self: stretch;
         flex: 1;
         outline: none;
@@ -321,30 +352,38 @@ option {
             }
         }
     }
-}
 
-// condition checkboxes
-// This is within the input-container (classes for that defined in the @media queries above) but i left it out because it doesnt need to change based on screen size.
-.condition-box {
-    color: $text;
-    font-family: $bodyFont;
-    // &:hover {
-    //     cursor: pointer;
-    // }
-}
+    // condition checkboxes
+    .condition-box {
+        color: $text;
+        font-family: $bodyFont;
+        // &:hover {
+        //     cursor: pointer;
+        // }
+    }
 
-.indented-condition-box {
-    margin-left: 1.8rem;
-}
+    .indented-condition-box {
+        margin-left: 1.8rem;
+    }
 
-.panel {
-    display: none;
-    overflow: hidden;
-}
+    .panel {
+        display: none;
+        overflow: hidden;
+    }
 
-.condition-accordion-caret {
-    transition: transform 0.25s ease-in-out;
-    &:hover {
-        cursor: pointer;
+    .condition-accordion-caret {
+        transition: transform 0.25s ease-in-out;
+        &:hover {
+            cursor: pointer;
+        }
+    }
+
+    .fa-caret-down {
+        font-size: 1.5rem;
+    }
+
+    #exclusions, #minPrice, #maxPrice, #sort {
+        height: 25px;
+        font-size: 1rem;
     }
 }
