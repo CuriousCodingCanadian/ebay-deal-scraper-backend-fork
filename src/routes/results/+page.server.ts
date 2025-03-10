@@ -408,7 +408,3 @@ export const load: PageServerLoad = async ({ url }) => {
         throw error(500, 'Failed to fetch results from eBay');
     }
 }
-
-function getTime(itemEndDate: string) {
-    throw new Error('Function not implemented.');
-}

@@ -212,7 +212,7 @@ option {
     }
 }
 
-@media (max-width: $breakpoint) { // Mobile styles
+@media (max-width: #{$breakpoint - 1}) { // Mobile styles
     .input-container {
         margin: 0 auto;
         display: flex;
