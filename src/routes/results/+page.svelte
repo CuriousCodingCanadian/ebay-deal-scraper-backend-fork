@@ -2,7 +2,7 @@
     import Titles from "$lib/components/titles.svelte";
     import type { PageData, SearchResult } from '$lib/types.ts';
     import { onMount } from 'svelte';
-    import { goto } from '$app/navigation';
+    // import { goto } from '$app/navigation';
     import Tooltip from "$lib/components/tooltip.svelte";
 
     export let data: PageData;
@@ -10,7 +10,6 @@
     let allResults: SearchResult[] = data?.results || [];
     let browserIsFirefox: boolean = false; // Declare outside, initialize to a default value
     let currentPage: number = 1; // Declare outside, initialize to a default value
-    let currentPageIsOne: boolean = false;
     let back: () => void;
     let forward: () => void;
 
@@ -241,18 +240,17 @@
 
         // Variable for current page
         currentPage = parseInt(url.searchParams.get("page") || "1", 10);
-        if (currentPage === 1) currentPageIsOne = true
 
         back = () => {
             // const url = new URL(window.location.href); // Declare url inside back
             url.searchParams.set("page", Math.max(1, currentPage - 1).toString());
-            goto(url.toString());
+            window.location.href = url.toString();
         };
 
         forward = () => {
             // const url = new URL(window.location.href); // Declare url inside forward
             url.searchParams.set("page", (currentPage + 1).toString());
-            goto(url.toString());
+            window.location.href = url.toString();
         };
 
         // Checkbox Accordions
@@ -313,6 +311,13 @@
         }
         window.location.href = updatedUrl.toString();
     }
+
+    function updateSort() {
+        console.log('📊 [Client] Debug: Sort changed to:', sortBy)
+        const updatedUrl = new URL(window.location.href);
+        updatedUrl.searchParams.set('sort', sortBy);
+        window.location.href = updatedUrl.toString();
+    }
 </script>
 
 <svelte:window bind:innerWidth={width} />
@@ -365,7 +370,7 @@
                     </div>
                     
                     <label class="block" for="sort" style="margin-top: 15px !important;">Sort By:</label>
-                    <select class="block" id="sort" bind:value={sortBy} on:change={() => console.log('📊 [Client] Debug: Sort changed to:', sortBy)}>
+                    <select class="block" id="sort" bind:value={sortBy} on:change={updateSort}>
                         <option value="best-match">Best Match</option>
                         <option value="price">Price + Shipping (lowest to highest)</option>
                         <option value="-price">Price + Shipping (highest to lowest)</option>
@@ -533,9 +538,9 @@
         </div>
 
     <div class="pagination">
-        <!-- {#if currentPage > 1} -->
-        <button disabled="{currentPageIsOne}" on:click={back} aria-label="Previous Page"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;Forward</button>
-        <!-- {/if} -->
-        <button on:click={forward} aria-label="Next Page">Back&nbsp;&nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+        {#if currentPage > 1}
+        <button on:click={back} aria-label="Previous Page"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i>&nbsp;&nbsp;Back</button>
+        {/if}
+        <button on:click={forward} aria-label="Next Page">Forward&nbsp;&nbsp;<i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
     </div>
 </main>
