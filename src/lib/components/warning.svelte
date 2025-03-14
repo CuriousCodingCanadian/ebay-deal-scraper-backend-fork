@@ -8,14 +8,14 @@
 </script>
 
 {#if bold}
-    <p class="warning" style="text-align: center; font-size: 1.25em;">
+    <p class="warning">
         <strong>
             <span class="warning-red">{redtext}</span> 
             {@render children()}
         </strong>
     </p>
 {:else}
-    <p class="warning" style="text-align: center; font-size: 1.25em;">
+    <p class="warning">
         <span class="warning-red">{redtext}</span> 
         {@render children()}
     </p>
@@ -26,7 +26,9 @@
 
     .warning {
         font-family: $bodyFont;
-        color: $text
+        color: $text;
+        text-align: center;
+        font-size: 1.25em;
     }
 
     .warning-red {
