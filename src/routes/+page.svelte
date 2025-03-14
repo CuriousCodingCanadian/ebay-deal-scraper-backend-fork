@@ -3,19 +3,20 @@
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
     import Tooltip from '$lib/components/tooltip.svelte';
+    import Warning from '$lib/components/warning.svelte';
 
     let width: number;
 
-    let searchQuery = "";
-    let exclusions = ""
-    let filterAuction = true;
-    let filterBuyItNow = true;
-    let sortBy = 'best-match';
-    let pageNumber = 1;
-    let minPrice = "";
-    let maxPrice = "";
-    let loading = false;
-    let condition = "";
+    let searchQuery: string = "";
+    let exclusions: string = ""
+    let filterAuction: boolean = true;
+    let filterBuyItNow: boolean = true;
+    let sortBy: string = 'best-match';
+    let pageNumber: number = 1;
+    let minPrice: string = "";
+    let maxPrice: string = "";
+    let loading: boolean = false;
+    let condition: string = "";
 
     $: exclusions = exclusions
     .replace(/[^a-zA-Z, ]/g, "")           // Allow only lowercase letters and commas
@@ -29,7 +30,7 @@
             .map(box => box.getAttribute('data-id'))
             .filter(id => id !== null && id !== "")
             .join('|');    
-        const condition = encodeURIComponent(conditionIds.replace(/\|{2,}/g, '|'));
+        const condition = conditionIds.replace(/\|{2,}/g, '|');
         console.log(`[Client] Debug: Condition String: ${condition}`)
         return condition
     }
@@ -193,8 +194,10 @@
     <Titles large>eBay Deal Scraper</Titles>
     {:else}
     <Titles custom-58px>eBay Deal Scraper</Titles>
-    {/if}
-    <p class="warning" style="text-align: center; font-size: 1.25em;"><strong><span class="warning-red">IMPORTANT:</span> This site is in alpha&semi; features may be broken. Report issues or request features with <a href="https://docs.google.com/forms/d/e/1FAIpQLScuZlY43CYsrOHs-bKopbHylZT2hW9HrDU7vsNBifN6OdAkjw/viewform?usp=dialog">this form.</a></strong></p>    
+    {/if}   
+    <Warning bold redtext="IMPORTANT:">
+        This site is in alpha&semi; features may be broken. Report issues or request features with <a href="https://docs.google.com/forms/d/e/1FAIpQLScuZlY43CYsrOHs-bKopbHylZT2hW9HrDU7vsNBifN6OdAkjw/viewform?usp=dialog">this form.</a>
+    </Warning>
 
     <div class="input-container">
         <label for="search">Search:</label>
@@ -231,10 +234,6 @@
                             </label>
                         </div>
                 
-                        <!-- {#if filterAuction && !filterBuyItNow}
-                            <p class="warning" style="text-align: center !important;"><span class="warning-red">Warning:</span> The auction filter might not work as expected. The issue is being investigated.</p>
-                        {/if} -->
-                        
                         <label class="block" for="sort" style="margin-top: 15px !important;">Sort By:</label>
                         <select class="block" id="sort" bind:value={sortBy} on:change={() => console.log('📊 [Client] Debug: Sort changed to:', sortBy)}>
                             <option value="best-match">Best Match</option>
@@ -352,7 +351,7 @@
         </div>
         {#if loading}
             <br>
-            <p class="warning" style="text-align: center !important;">Loading...</p>
+            <Warning redtext="">Loading...</Warning>
         {/if}
     </div>
 </main> 

@@ -19,23 +19,8 @@ option {
     font-family: $bodyFont;
 }
 
-.warning {
-    font-family: $bodyFont;
-    color: $text
-}
-
-.warning-red {
-    color: #ff1111;
-}
-
-
 // DESKTOP AND MOBILE STYLES FOR HOME PAGE
 @media (min-width: $breakpoint) { // Desktop styles
-
-    :root {
-        font-size: 16px;
-    }
-
     .input-container {
         margin: 0 auto;
         display: flex;

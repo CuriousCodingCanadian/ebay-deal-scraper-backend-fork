@@ -14,16 +14,13 @@
     let back: () => void;
     let forward: () => void;
 
-    let loading: boolean = false;
-    let pageNumber: number = 1;
-
     let width: number;
 
     let url: URL; // value defined in onMount
     let baseUrl: string; // value defined in onMount
 
     let searchQuery: string; // value defined in onMount
-    let exclusions: string = ''; // real value defined in onMount
+    let exclusions: string; // value defined in onMount
     let filterAuction: boolean; // value defined in onMount
     let filterBuyItNow: boolean; // value defined in onMount
     let sortBy: string; // this sort thing is confusing the variables are messed up!!!
@@ -31,64 +28,14 @@
     let maxPrice: string; // value defined in onMount
     let condition: string; // value defined in onMount
 
-    // function updateURLParam(url: string, paramName: string, paramValue: string): string {
-    //     const urlObj = new URL(url);
-    //     urlObj.searchParams.set(paramName, paramValue);
-    //     return urlObj.toString();
-    // }
-
-    $: exclusions = exclusions
-    .replace(/[^a-zA-Z, ]/g, "")           // Allow only lowercase letters and commas
-    .replace(/\s{2,}/g, " ")            // Replace consecutive spaces with a single space
-    .replace(/,{2,}/g, ",")             // Prevent consecutive commas
-    .replace(/,\s{2,}/g, ", ")          // Prevent ",  , " (comma + multiple spaces)
-    .replace(/(,)\1+/g, ",");           // Prevent consecutive commas (like , , ,)
-
-    function buildConditionString() {
-        const conditionIds = Array.from(document.querySelectorAll('.condition-box:checked') as NodeListOf<HTMLInputElement>)
-            .map(box => box.getAttribute('data-id'))
-            .filter(id => id !== null && id !== "")
-            .join('|');    
-        const condition = conditionIds.replace(/\|{2,}/g, '|');
-        console.log(`[Client] Debug: Condition String: ${condition}`)
-        return condition
+    function updateURLParam(url: string, paramName: string, paramValue: string): string {
+        const urlObj = new URL(url);
+        urlObj.searchParams.set(paramName, paramValue);
+        return urlObj.toString();
     }
 
     function handleSubmit() {
-        if (searchQuery === '') { 
-            alert(`Error: no search query entered.`)
-            console.log(`Exclusions: ${exclusions}`)
-        } else { 
-            pageNumber = 1; // Reset page number on new search
-            loading = true;
-
-            let filter = '';
-            if (filterAuction === filterBuyItNow) {
-                filter = 'all';
-            } else if (filterAuction) {
-                filter = 'auction';
-            } else if (filterBuyItNow) {
-                filter = 'buy-it-now';
-            }
-
-
-            // Build the condition string during form submission
-            condition = buildConditionString();
-            
-            const queryParams = new URLSearchParams({
-                search: searchQuery,
-                exclude: exclusions,
-                filter: filter,
-                sort: sortBy,
-                page: pageNumber.toString(),
-                minPrice: minPrice,
-                maxPrice: maxPrice,
-                condition: condition,
-            }).toString();
-             
-            window.location.href = `/results?${queryParams}`;
-            console.log('[Client] Debug: Navigating to results page:', `/results?${queryParams}`);
-        }
+        window.location.href = updateURLParam(url.toString(), "search", searchQuery);
     }
 
     function handleSubmitEnter(kbdevent: KeyboardEvent) {
@@ -134,17 +81,25 @@
         minPrice = url.searchParams.get('minPrice') || '';
         maxPrice = url.searchParams.get('maxPrice') || '';
 
+        condition = url.searchParams.get('condition') || '';
+        if (condition.includes("1000")) {(document.querySelector('[data-id="1000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("1500")) {(document.querySelector('[data-id="1500"]') as HTMLInputElement).checked = true}
+        if (condition.includes("1750")) {(document.querySelector('[data-id="1750"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2000")) {(document.querySelector('[data-id="2000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2010")) {(document.querySelector('[data-id="2010"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2020")) {(document.querySelector('[data-id="2020"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2030")) {(document.querySelector('[data-id="2030"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2500")) {(document.querySelector('[data-id="2500"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2750")) {(document.querySelector('[data-id="2750"]') as HTMLInputElement).checked = true}
+        if (condition.includes("2990") || condition.includes("3000")) {(document.querySelector('[data-id="2990|3000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("3010") || condition.includes("4000")) {(document.querySelector('[data-id="3010|4000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("5000")) {(document.querySelector('[data-id="5000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("6000")) {(document.querySelector('[data-id="6000"]') as HTMLInputElement).checked = true}
+        if (condition.includes("7000")) {(document.querySelector('[data-id="7000"]') as HTMLInputElement).checked = true}
+
         // Checkboxes
         function updateMainCheckboxState(mainCheckbox: HTMLInputElement, subCheckboxes: NodeListOf<HTMLInputElement>) {
-            const checkedCount = Array.from(subCheckboxes).filter(checkbox => checkbox.checked).length;
-            
-            // Find the caret and panel elements associated with this checkbox
-            const caretElement = mainCheckbox.parentElement?.nextElementSibling as HTMLElement;
-            let panelElement = caretElement?.nextElementSibling as HTMLElement;
-            while (panelElement && !panelElement.classList.contains("panel")) {
-                panelElement = panelElement.nextElementSibling as HTMLElement;
-            }
-
+            const checkedCount = Array.from(subCheckboxes).filter(checkbox => checkbox.checked).length; 
             if (checkedCount === subCheckboxes.length) {
                 mainCheckbox.checked = true;
                 mainCheckbox.indeterminate = false;
@@ -154,12 +109,6 @@
             } else {
                 mainCheckbox.checked = false;
                 mainCheckbox.indeterminate = true;
-                
-                // Automatically open the accordion when indeterminate
-                if (caretElement && panelElement) {
-                    panelElement.style.display = "block";
-                    caretElement.style.transform = "rotate(180deg)";
-                }
             }
         }
 
@@ -171,70 +120,18 @@
 
             mainCheckbox.addEventListener('change', () => {
                 subCheckboxes.forEach(checkbox => {
-                    checkbox.checked = mainCheckbox.checked;
+                checkbox.checked = mainCheckbox.checked;
                 });
-                updateCondition();
             });
 
             subCheckboxes.forEach(checkbox => {
-                checkbox.addEventListener('change', () => {
-                    updateMainCheckboxState(mainCheckbox, subCheckboxes);
-                    updateCondition();
-                });
+                checkbox.addEventListener('change', () => updateMainCheckboxState(mainCheckbox, subCheckboxes));
             });
         }
 
         setupCheckboxSync('new-condition', '.other-new-condition');
         setupCheckboxSync('refurbished-condition', '.other-refurbished-condition');
         setupCheckboxSync('used-condition', '.other-used-condition');
-        const notWorkingCheckbox = document.getElementById('notworking-condition') as HTMLInputElement;
-        if (notWorkingCheckbox) {
-            notWorkingCheckbox.addEventListener('change', updateCondition);
-        }
-
-        condition = url.searchParams.get('condition') || '';
-        console.log('Condition string:', condition);
-
-        // Add logging to check if elements exist
-        const checkboxes = document.querySelectorAll('[data-id]');
-        console.log('Found checkboxes:', checkboxes.length);
-        checkboxes.forEach(checkbox => {
-            console.log('Checkbox data-id:', checkbox.getAttribute('data-id'));
-        });
-
-        // Modify the checkbox checking code to log failures
-        const setCheckbox = (dataId: string) => {
-            const checkbox = document.querySelector(`[data-id="${dataId}"]`) as HTMLInputElement;
-            if (checkbox) {
-                checkbox.checked = true;
-            } else {
-                console.log(`Failed to find checkbox with data-id: ${dataId}`);
-            }
-        };
-
-        if (condition.includes("1000")) setCheckbox("1000");
-        if (condition.includes("1500")) setCheckbox("1500");
-        if (condition.includes("1750")) setCheckbox("1750");
-        if (condition.includes("2000")) setCheckbox("2000");
-        if (condition.includes("2010")) setCheckbox("2010");
-        if (condition.includes("2020")) setCheckbox("2020");
-        if (condition.includes("2030")) setCheckbox("2030");
-        if (condition.includes("2500")) setCheckbox("2500");
-        if (condition.includes("2750")) setCheckbox("2750");
-        if (condition.includes("2990") || condition.includes("3000")) setCheckbox("2990|3000");
-        if (condition.includes("3010") || condition.includes("4000")) setCheckbox("3010|4000");
-        if (condition.includes("5000")) setCheckbox("5000");
-        if (condition.includes("6000")) setCheckbox("6000");
-        if (condition.includes("7000")) setCheckbox("7000");
-
-        // code was broken so copilot told me to add this
-        const newCheckbox = document.getElementById('new-condition') as HTMLInputElement;
-        const refurbishedCheckbox = document.getElementById('refurbished-condition') as HTMLInputElement;
-        const usedCheckbox = document.getElementById('used-condition') as HTMLInputElement;
-        updateMainCheckboxState(newCheckbox, document.querySelectorAll<HTMLInputElement>('.other-new-condition'));
-        updateMainCheckboxState(refurbishedCheckbox, document.querySelectorAll<HTMLInputElement>('.other-refurbished-condition'));
-        updateMainCheckboxState(usedCheckbox, document.querySelectorAll<HTMLInputElement>('.other-used-condition'));
-
 
         allResults = data?.results || [];
         browserIsFirefox = navigator.userAgent.toLowerCase().includes("firefox");
@@ -276,43 +173,6 @@
             });
         }
     });
-
-    // function updateMinMaxPrices() {
-    //     const updatedMinMaxUrl = replaceSearchParam(((replaceSearchParam(url, 'minPrice', minPrice) as unknown) as URL), 'maxPrice', maxPrice)
-    //     window.location.href = updatedMinMaxUrl;
-    // };
-
-    function updateMinMaxPrices() {
-        const updatedUrl = new URL(window.location.href);
-        updatedUrl.searchParams.set('minPrice', minPrice);
-        updatedUrl.searchParams.set('maxPrice', maxPrice);
-        window.location.href = updatedUrl.toString();
-    }
-
-    function updateExclusions() {
-        const updatedUrl = new URL(window.location.href);
-        updatedUrl.searchParams.set('exclude', exclusions);
-        window.location.href = updatedUrl.toString();
-    }
-    
-    function updateCondition() {
-        const updatedUrl = new URL(window.location.href);
-        const conditionTemp = buildConditionString();
-        updatedUrl.searchParams.set('condition', conditionTemp);
-        window.location.href = updatedUrl.toString();
-    }
-
-    function updateFilter() {
-        const updatedUrl = new URL(window.location.href);
-        if (filterAuction === filterBuyItNow) {
-            updatedUrl.searchParams.set('filter', 'all');
-        } else if (filterAuction) {
-            updatedUrl.searchParams.set('filter', 'auction');
-        } else if (filterBuyItNow) {
-            updatedUrl.searchParams.set('filter', 'buy-it-now');
-        }
-        window.location.href = updatedUrl.toString();
-    }
 </script>
 
 <svelte:window bind:innerWidth={width} />
@@ -345,21 +205,18 @@
         <div id="main-flexbox">
             <div id="sidebar">
                 <h1>Filters</h1>
-                    <label for="exclusions-flexbox" class="block"><Tooltip fontsize="1rem" questionmark title="Exclude Words" text="Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word &quot;box&quot;, you can type the word &quot;box&quot; into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code>">Exclude Words</Tooltip></label>
-                    <div class="field-button-container" id="exclusions-flexbox">
-                        <input class="block" type="text" id="exclusions" bind:value={exclusions} on:input={() => console.log('📝 [Client] Debug: Search Exclusions updated:', exclusions)} placeholder="Enter words to exclude...">
-                        <button aria-label="Update Exclusions" on:click={updateExclusions} class="submit-button"><i class="fa-solid fa-arrow-right"></i></button>
-                    </div>
+                <label class="block"><Tooltip fontsize="1rem" questionmark title="Exclude Words" text="Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word &quot;box&quot;, you can type the word &quot;box&quot; into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code>">Exclude Words</Tooltip></label>
+                    <input class="block" type="text" id="exclusions" bind:value={exclusions} on:input={() => console.log('📝 [Client] Debug: Search Exclusions updated:', exclusions)} placeholder="Enter words to exclude...">
                     <br>
                     <label for="listing-type">Listing Type:</label>
                     <div id="listing-type">
                         <label>
-                            <input id="auction-checkbox" class="listingtypecheckboxes" type="checkbox" bind:checked={filterAuction} on:change={updateFilter}>
+                            <input id="auction-checkbox" class="listingtypecheckboxes" type="checkbox" bind:checked={filterAuction}>
                             Auction
                         </label>
                         <br>
                         <label>
-                            <input id="buyitnow-checkbox" class="listingtypecheckboxes" type="checkbox" bind:checked={filterBuyItNow} on:change={updateFilter}>
+                            <input id="buyitnow-checkbox" class="listingtypecheckboxes" type="checkbox" bind:checked={filterBuyItNow}>
                             Buy It Now
                         </label>
                     </div>
@@ -375,14 +232,12 @@
                         {/if}
                     </select>
             
-                    <label class="block" for="price-filter" style="margin-top: 15px !important;">Price:</label>
-                    <div class="field-button-container" id="price-filter">
-                        <span>$</span>
-                        <input type="text" inputmode="numeric" id="minPrice" bind:value={minPrice} placeholder="Min">
-                        <span>to $</span>
-                        <input type="text" inputmode="numeric" id="maxPrice" bind:value={maxPrice} placeholder="Max">  
-                        <button aria-label="Update Min/Max Prices" on:click={updateMinMaxPrices} class="submit-button"><i class="fa-solid fa-arrow-right"></i></button>
-                    </div>
+                    <label class="block" for="minPrice" style="margin-top: 15px !important;">Min Price:</label>
+                    <input class="block" type="number" id="minPrice" bind:value={minPrice} placeholder="Enter min price">
+            
+                    <label class="block" for="maxPrice" style="margin-top: 15px !important;">Max Price:</label>
+                    <input class="block" type="number" id="maxPrice" bind:value={maxPrice} placeholder="Enter max price">
+
                     <br>
                     <label for="condition-boxes">Item Conditions:</label>
                     <div id="condition-boxes">
@@ -418,17 +273,17 @@
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2010">
-                            Excellent
+                            Excellent - Refurbished
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2020">
-                            Very Good
+                            Very Good - Refurbished
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-refurbished-condition" data-id="2030">
-                            Good
+                            Good - Refurbished
                         </label>
                         <br>                    
                         <label>
@@ -446,27 +301,27 @@
                     <div class="panel">
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="2750">
-                            Like New
+                            Used - Like New
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="2990|3000">
-                            Excellent
+                            Used - Excellent
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="3010|4000">
-                            Very Good
+                            Used - Very Good
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="5000">
-                            Good
+                            Used - Good
                         </label>
                         <br>                    
                         <label>
                             <input type="checkbox" class="condition-box indented-condition-box other-used-condition" data-id="6000">
-                            Fair
+                            Used - Fair
                         </label>
                         <br>
                     </div>

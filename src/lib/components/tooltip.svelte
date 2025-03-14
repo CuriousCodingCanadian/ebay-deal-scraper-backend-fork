@@ -143,6 +143,7 @@
             .tooltiptext {
                 animation: fadeIn 0.25s;
                 visibility: visible;
+                display: inline-block;
                 opacity: 100%;
             }
         }
@@ -154,6 +155,7 @@
 
         .tooltiptext {
             visibility: hidden;
+            display: none;
             opacity: 0%;
             width: 240px;
             background-color: $veryLightGrey;
