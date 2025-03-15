@@ -37,11 +37,17 @@
     // }
 
     $: exclusions = exclusions
-    .replace(/[^a-zA-Z, ]/g, "")           // Allow only lowercase letters and commas
+    .replace(/[^a-zA-Z0-9,.!@#$%^&*()_+\-=\[\]{};:\/\\|<>? ]/g, "")   // Allow most special chars except quotes
     .replace(/\s{2,}/g, " ")            // Replace consecutive spaces with a single space
     .replace(/,{2,}/g, ",")             // Prevent consecutive commas
     .replace(/,\s{2,}/g, ", ")          // Prevent ",  , " (comma + multiple spaces)
     .replace(/(,)\1+/g, ",");           // Prevent consecutive commas (like , , ,)
+
+    function runIfEnterKey(kbdevent: KeyboardEvent, callback: () => void) {
+        if (kbdevent.key === "Enter") {
+            callback();
+        }
+    }
 
     function buildConditionString() {
         const conditionIds = Array.from(document.querySelectorAll('.condition-box:checked') as NodeListOf<HTMLInputElement>)
@@ -90,12 +96,6 @@
         }
     }
 
-    function handleSubmitEnter(kbdevent: KeyboardEvent) {
-        if (kbdevent.key === "Enter") {
-            handleSubmit()
-        }
-    }
-
     onMount(() => {
         // CURRENT URL
         url = new URL(window.location.href);
@@ -130,8 +130,21 @@
         else if (sort === 'end-time') { sortBy = "end-time" }
         else { sortBy = "best-match" }
 
-        minPrice = url.searchParams.get('minPrice') || '';
-        maxPrice = url.searchParams.get('maxPrice') || '';
+        { // Set the min/max price based on URL and ensure that minPrice is smaller than maxPrice
+            let minPriceTemp = url.searchParams.get('minPrice') || '';
+            let maxPriceTemp = url.searchParams.get('maxPrice') || '';
+            
+            let minPriceNum = minPriceTemp ? parseFloat(minPriceTemp) : 0;
+            let maxPriceNum = maxPriceTemp ? parseFloat(maxPriceTemp) : 0;
+            
+            if (minPriceNum >= maxPriceNum && maxPriceNum !== 0) {
+                minPrice = (maxPriceNum - 1).toString();
+                maxPrice = maxPriceNum.toString();
+            } else {
+                minPrice = minPriceTemp;
+                maxPrice = maxPriceTemp;
+            }
+        }
 
         // Checkboxes
         function updateMainCheckboxState(mainCheckbox: HTMLInputElement, subCheckboxes: NodeListOf<HTMLInputElement>) {
@@ -342,7 +355,7 @@
                 id="search"
                 placeholder="Enter search query..."
                 bind:value={searchQuery}
-                on:keydown={handleSubmitEnter}
+                on:keydown={(e) => runIfEnterKey(e, handleSubmit)}
                 on:input={() => console.log('📝 [Client] Debug: Search query updated:', searchQuery)} />
                 <button type="submit" class="searchbutton" on:click={handleSubmit}>Search</button>
         </div>
@@ -350,10 +363,36 @@
         <div id="main-flexbox">
             <div id="sidebar">
                 <h1>Filters</h1>
-                    <label for="exclusions-flexbox" class="block"><Tooltip fontsize="1rem" questionmark title="Exclude Words" text="Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word &quot;box&quot;, you can type the word &quot;box&quot; into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code>">Exclude Words</Tooltip></label>
+                    <label for="exclusions-flexbox" class="block">
+                        <Tooltip 
+                            fontsize="1rem" 
+                            questionmark 
+                            title="Exclude Words" 
+                            text="Word exclusion lets you filter out results containing a certain word. <br><br>For instance, if you are searching for something and you don't want results that contain the word &quot;box&quot;, you can type the word &quot;box&quot; into the Exclude Words box to remove all results containing the word box. <br><br>You can enter one word or multiple words. <br><br><strong>NOTE:</strong> This feature will only work properly if you separate words using commas. For example: <code>box, backplate, not working, for parts</code>"
+                            >Exclude Words
+                        </Tooltip>
+                    </label>
                     <div class="field-button-container" id="exclusions-flexbox">
-                        <input class="block" type="text" id="exclusions" bind:value={exclusions} on:input={() => console.log('📝 [Client] Debug: Search Exclusions updated:', exclusions)} placeholder="Enter words to exclude...">
-                        <button aria-label="Update Exclusions" on:click={updateExclusions} class="submit-button"><i class="fa-solid fa-arrow-right"></i></button>
+                        <input 
+                            class="block" 
+                            type="text" 
+                            id="exclusions" 
+                            bind:value={exclusions} 
+                            on:blur={(e) => {
+                                if ((e.target as HTMLInputElement).value !== url.searchParams.get('exclude')) {
+                                    updateExclusions();
+                                }
+                            }}
+                            on:keydown={(e) => runIfEnterKey(e, updateExclusions)}
+                            placeholder="Enter words to exclude..."
+                        >
+                        <button 
+                            aria-label="Update Exclusions"
+                            on:click={updateExclusions}
+                            class="submit-button"
+                        >
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
                     </div>
                     <br>
                     <label for="listing-type">Listing Type:</label>
@@ -383,9 +422,33 @@
                     <label class="block" for="price-filter" style="margin-top: 15px !important;">Price:</label>
                     <div class="field-button-container" id="price-filter">
                         <span>$</span>
-                        <input type="text" inputmode="numeric" id="minPrice" bind:value={minPrice} placeholder="Min">
+                        <input 
+                            type="text" 
+                            inputmode="numeric" 
+                            id="minPrice" 
+                            bind:value={minPrice} 
+                            on:blur={(e) => {
+                                if ((e.target as HTMLInputElement).value !== url.searchParams.get('minPrice')) {
+                                    updateMinMaxPrices();
+                                }
+                            }}
+                            on:keydown={(e) => runIfEnterKey(e, updateMinMaxPrices)}
+                            placeholder="Min"
+                        >
                         <span>to $</span>
-                        <input type="text" inputmode="numeric" id="maxPrice" bind:value={maxPrice} placeholder="Max">  
+                        <input 
+                            type="text" 
+                            inputmode="numeric" 
+                            id="maxPrice" 
+                            bind:value={maxPrice} 
+                            on:blur={(e) => {
+                                if ((e.target as HTMLInputElement).value !== url.searchParams.get('maxPrice')) {
+                                    updateMinMaxPrices();
+                                }
+                            }}
+                            on:keydown={(e) => runIfEnterKey(e, updateMinMaxPrices)}
+                            placeholder="Max"
+                        >
                         <button aria-label="Update Min/Max Prices" on:click={updateMinMaxPrices} class="submit-button"><i class="fa-solid fa-arrow-right"></i></button>
                     </div>
                     <br>
