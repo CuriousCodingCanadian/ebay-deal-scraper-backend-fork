@@ -196,7 +196,7 @@
     <Titles custom-58px>eBay Deal Scraper</Titles>
     {/if}   
     <Warning bold redtext="IMPORTANT:">
-        This site is in alpha&semi; features may be broken. Report issues or request features with <a href="https://docs.google.com/forms/d/e/1FAIpQLScuZlY43CYsrOHs-bKopbHylZT2hW9HrDU7vsNBifN6OdAkjw/viewform?usp=dialog">this form.</a>
+        This site is in alpha&semi; features may be broken. Report issues or request features using <a href="https://github.com/PowerPCFan/ebay-deal-scraper-backend/issues">GitHub Issues</a>.
     </Warning>
 
     <div class="input-container">
